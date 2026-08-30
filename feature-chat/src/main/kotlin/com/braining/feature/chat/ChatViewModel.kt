@@ -13,6 +13,7 @@ import com.braining.core.domain.model.RequestDiagnostics
 import com.braining.core.domain.model.SttError
 import com.braining.core.domain.model.TokenUsage
 import com.braining.core.domain.provider.AiProvider
+import com.braining.core.domain.routing.ModelRouter
 import com.braining.core.domain.speech.SpeechToText
 import com.braining.core.domain.speech.TranscriptionEvent
 import com.braining.core.domain.store.AppPreferences
@@ -108,6 +109,21 @@ data class ChatUiState(
      */
     val lastDiagnostics: RequestDiagnostics? = null,
     val voice: VoiceUiState = VoiceUiState(),
+
+    /**
+     * Providers that could take over the turn that just failed, in the router's order.
+     *
+     * **Empty is a decision, not an absence.** `DefaultModelRouter.isRecoverable` refuses to
+     * offer a hop for a missing key, a rejected key, a dead network or an unclassified failure —
+     * those are the user's own setup or a fault nobody has diagnosed, and routing around them
+     * hides the thing they need to fix. When it is empty the failure card shows «أعد المحاولة»
+     * alone, which is the honest offer.
+     *
+     * Added 2026-08-30. Clarify has had this since 28 August; **chat did not, and the owner met
+     * the gap the first time Gemini hit its quota** — the screen named the failure and offered
+     * nothing. §10 entry 47.
+     */
+    val fallbackOptions: List<ProviderId> = emptyList(),
 )
 
 @HiltViewModel
@@ -116,7 +132,23 @@ class ChatViewModel @Inject constructor(
     private val appPreferences: AppPreferences,
     private val providers: Map<String, @JvmSuppressWildcards AiProvider>,
     private val speechToText: SpeechToText,
+    /**
+     * Decides **whether** a failure is worth handing to someone else, and in what order.
+     *
+     * The same instance Clarify uses, and deliberately so: two screens that disagree about which
+     * provider should take over would be a bug nobody could see, because each screen looks
+     * correct on its own.
+     */
+    private val router: ModelRouter,
 ) : ViewModel() {
+
+    /**
+     * Providers this turn has already burned, including the one that failed.
+     *
+     * Without it a two-provider setup ping-pongs: A fails, B is offered, B fails, A is offered.
+     * Cleared when a new user message starts a new turn.
+     */
+    private val triedThisTurn = mutableSetOf<ProviderId>()
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
@@ -266,20 +298,47 @@ class ChatViewModel @Inject constructor(
             it.copy(
                 messages = it.messages + userMessage,
                 inputText = "",
+                error = null,
+                fallbackOptions = emptyList(),
+                tokenUsage = null,
+                lastDiagnostics = null,
+            )
+        }
+        // A new question is a new turn: whatever the previous one burned is irrelevant.
+        triedThisTurn.clear()
+        runCompletion(_uiState.value.selectedProvider)
+    }
+
+    /**
+     * Send this conversation again, on [providerId], **without adding a message.**
+     *
+     * Split out of [sendMessage] on 2026-08-30 so that a failed turn can be handed to another
+     * provider. The conversation already ends with the user's question — a failure removes its
+     * own empty assistant bubble — so there is nothing to append and nothing to remember: the
+     * retry and the fallback are the same operation with a different provider argument.
+     */
+    private fun runCompletion(providerId: ProviderId) {
+        if (_uiState.value.isGenerating) return
+        if (_uiState.value.messages.none { it.role == MessageRole.USER }) return
+
+        triedThisTurn += providerId
+        _uiState.update {
+            it.copy(
                 isGenerating = true,
                 error = null,
+                fallbackOptions = emptyList(),
                 tokenUsage = null,
                 lastDiagnostics = null,
             )
         }
 
-        val provider = providers.values.find { it.id == _uiState.value.selectedProvider }
+        val provider = providers.values.find { it.id == providerId }
         if (provider == null) {
             _uiState.update {
                 it.copy(
                     isGenerating = false,
                     error = AiError.Unknown(
-                        provider = it.selectedProvider,
+                        provider = providerId,
                         status = null,
                         detail = "Provider not found",
                     ),
@@ -294,7 +353,9 @@ class ChatViewModel @Inject constructor(
 
         val developerMode = _uiState.value.developerMode
         val request = AiRequest(
-            model = _uiState.value.selectedModel,
+            // `resolveModel(providerId)`, not `selectedModel` — a fallback to Claude must not
+            // send Gemini's model name. They are the same value on the normal path.
+            model = resolveModel(providerId),
             messages = aiMessages,
             stream = true,
             diagnostics = developerMode,
@@ -338,6 +399,8 @@ class ChatViewModel @Inject constructor(
                     // Socket and timeout exceptions arrive HERE — BaseHttpProvider lets them
                     // propagate rather than phrasing them itself — so this is where they are
                     // classified into typed AiErrors (NoNetwork, Timeout, Unknown).
+                    val failure = throwable.toAiError(providerId)
+                    val options = fallbackOptionsFor(providerId, failure)
                     _uiState.update { state ->
                         val msgs = state.messages.toMutableList()
                         if (assistantIndex < msgs.size && msgs[assistantIndex].isStreaming) {
@@ -346,7 +409,8 @@ class ChatViewModel @Inject constructor(
                         state.copy(
                             messages = msgs,
                             isGenerating = false,
-                            error = throwable.toAiError(state.selectedProvider),
+                            error = failure,
+                            fallbackOptions = options,
                             lastDiagnostics = diagnosticsSnapshot(null),
                         )
                     }
@@ -392,6 +456,9 @@ class ChatViewModel @Inject constructor(
 
                         is AiChunk.Error -> {
                             val diagnostics = diagnosticsSnapshot(null)
+                            // Computed OUTSIDE `update`: it reads the key store, and `update`
+                            // takes a lambda that may be re-run on contention.
+                            val options = fallbackOptionsFor(providerId, chunk.error)
                             _uiState.update { state ->
                                 val msgs = state.messages.toMutableList()
                                 if (assistantIndex < msgs.size) {
@@ -401,6 +468,7 @@ class ChatViewModel @Inject constructor(
                                     messages = msgs,
                                     isGenerating = false,
                                     error = chunk.error,
+                                    fallbackOptions = options,
                                     lastDiagnostics = diagnostics,
                                 )
                             }
@@ -408,6 +476,74 @@ class ChatViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    /**
+     * Who else could answer this, in the router's order — empty when a hop would be wrong.
+     *
+     * Suspending because it reads the key store: a provider with no key is not an option, and
+     * offering one would trade this failure for a worse one (the next error would name a missing
+     * key and read as if the user had misconfigured something).
+     */
+    private suspend fun fallbackOptionsFor(failed: ProviderId, error: AiError): List<ProviderId> =
+        router.fallbackCandidates(
+            failed = failed,
+            error = error,
+            keyed = keyedProviders(),
+            alreadyTried = triedThisTurn,
+        )
+
+    /**
+     * The providers the user holds a non-blank key for.
+     *
+     * Never throws: an unreadable store becomes an empty set, which costs a fallback offer rather
+     * than the screen.
+     */
+    private suspend fun keyedProviders(): Set<ProviderId> = runCatching {
+        keyStore.getAllKeys()
+            .filterValues { it.isNotBlank() }
+            .keys
+            .mapNotNull { name -> ProviderId.entries.firstOrNull { it.name == name } }
+            .toSet()
+    }.getOrDefault(emptySet())
+
+    /**
+     * Send the same question again to the provider that just failed.
+     *
+     * The right offer for a timeout or a provider that was briefly down, and the **only** offer
+     * when [ChatUiState.fallbackOptions] is empty.
+     */
+    fun retry() {
+        val failed = _uiState.value.error?.let { it.provider } ?: _uiState.value.selectedProvider
+        // A retry on the same provider must not consume it as an option: the user may still want
+        // it offered if a later attempt fails differently.
+        triedThisTurn -= failed
+        runCompletion(failed)
+    }
+
+    /**
+     * Hand this question to a provider the user picked from the failure card.
+     *
+     * **The selection is made permanent.** In Clarify a fallback answers one question and the
+     * screen names both providers; a chat is a continuing conversation, and switching for one
+     * turn would silently switch back on the next — so the header changes too, and the user can
+     * see which brain they are now talking to.
+     */
+    fun chooseFallback(providerId: ProviderId) {
+        if (_uiState.value.isGenerating) return
+        selectProvider(providerId)
+        runCompletion(providerId)
+    }
+
+    /**
+     * Take the router's own first choice.
+     *
+     * Goes through the same list the chips are built from, so it can never pick something the
+     * chips would not have offered.
+     */
+    fun tryAnyFallback() {
+        val first = _uiState.value.fallbackOptions.firstOrNull() ?: return
+        chooseFallback(first)
     }
 
     fun cancelGeneration() {

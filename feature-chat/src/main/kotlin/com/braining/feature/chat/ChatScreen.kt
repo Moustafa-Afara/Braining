@@ -3,6 +3,8 @@ package com.braining.feature.chat
 import com.braining.core.ui.error.ProviderErrorDetail
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -241,6 +244,55 @@ fun ChatScreen(
                         // when the endpoint and the outgoing body are worth reading.
                         uiState.lastDiagnostics?.let { diagnostics ->
                             if (uiState.developerMode) DiagnosticsPanel(diagnostics)
+                        }
+
+                        // ── who else could answer this ──────────────────────────────────
+                        //
+                        // Clarify has had this since 2026-08-28; **chat did not**, and the owner
+                        // found the gap the first time Gemini returned 429: the card named the
+                        // failure and offered him nothing to do about it. The app still never
+                        // switches provider by itself (his ruling of 28 August, reversing his own
+                        // of 17 August) — it names what failed, lists the providers he holds keys
+                        // for, and waits.
+                        //
+                        // **Empty means a hop would be wrong**, not that he has no other keys: a
+                        // missing key, a rejected key, a dead network and an unclassified failure
+                        // are all refused by `DefaultModelRouter.isRecoverable`. Then only
+                        // «أعد المحاولة» remains, which is the honest offer for a problem another
+                        // provider cannot solve.
+                        if (uiState.fallbackOptions.isNotEmpty()) {
+                            Spacer(Modifier.height(6.dp))
+                            BidiText(
+                                text = stringResource(R.string.chat_fallback_prompt),
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(uiState.fallbackOptions) { pid ->
+                                    FilterChip(
+                                        selected = false,
+                                        onClick = { viewModel.chooseFallback(pid) },
+                                        label = { Text(pid.displayName) },
+                                    )
+                                }
+                            }
+                        }
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            TextButton(onClick = { viewModel.retry() }) {
+                                Text(stringResource(R.string.chat_retry))
+                            }
+                            // One tap for a user who does not care which provider answers, only
+                            // that one does. It takes the head of the same list the chips are
+                            // built from, so it can never choose something they were not offered.
+                            if (uiState.fallbackOptions.isNotEmpty()) {
+                                TextButton(onClick = { viewModel.tryAnyFallback() }) {
+                                    Text(stringResource(R.string.chat_fallback_any))
+                                }
+                            }
                         }
                     }
                 }

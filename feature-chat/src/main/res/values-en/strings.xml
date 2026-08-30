@@ -26,4 +26,8 @@
 
     <!-- The Developer Mode strings moved to core-ui as `dev_*` on 2026-08-07. -->
     <string name="chat_action_history">History</string>
+    <!-- M5.2 · fallback provider chooser on the failure card. -->
+    <string name="chat_fallback_prompt">Pick a provider to answer instead:</string>
+    <string name="chat_fallback_any">Try any</string>
+    <string name="chat_retry">Try again</string>
 </resources>

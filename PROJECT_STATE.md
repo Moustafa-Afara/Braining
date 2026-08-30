@@ -657,6 +657,9 @@ lessons were paid for by plans that had quietly been made unnecessary or already
   before 2026-08-30 keeps whatever damage it arrived with until the owner re-pastes it. Cheap to
   fix at read time in `EncryptedKeyStore`; deferred because it would silently rewrite a stored
   credential, which §10 entry 45 is precisely about.
+- ~~**The fallback chooser exists only in Clarify.**~~ **Closed 2026-08-30** — chat has it. It
+  was never on the queue, which is the point of §10 entry 47: nobody noticed it was missing until
+  a provider failed on that screen.
 - **The AI-router toggle is unbuilt** (`BRAINING.md` §5). It toggles between an AI classifier and
   a rule table and neither exists; it belongs to M6 with the classifier. Recorded so it is not
   read as a missed M4 item.
@@ -843,6 +846,23 @@ These are the ones that were paid for more than once. The archive has the incide
     buttons whose contents can grow needs either a wrap, a scroll, or a second row decided in
     advance.
 
+48. **A guard that detects the untouched default does not protect against the mistake people
+    make.** `share_download_url` shipped as `…/USER/REPO/…` and the button was hidden while the
+    string still contained `USER/REPO`. The owner replaced the **whole string** with his
+    repository's clone URL — `…/Braining.git`, which is the URL GitHub puts in front of you on
+    the repository page — and the guard passed it, because the placeholder was indeed gone. The
+    check now tests the **shape** the value must have (`https://github.com/…/app-release.apk`)
+    rather than the shape it must not. **"Did they edit it?" is a weaker question than "is it
+    right?", and only the second one is worth asking.**
+
+47. **A feature built on one screen is not a feature; it is a feature on one screen.** The manual
+    fallback chooser landed in Clarify on 28 August and the milestone was recorded as done. Two
+    days later Gemini returned 429 **in chat** — where the chooser had never been built — and the
+    card named the failure and offered nothing. The whole point of the 28 August ruling was that
+    the user picks who answers when a provider fails; on the screen he uses most, he could not.
+    A capability stated in a ruling belongs on **every screen the failure can reach**, and the
+    only reliable way to know which those are is to grep for the error path, not to remember.
+
 46. **`?:` after a call whose `null` means success inverts the result silently.**
     `provider?.verify(key) ?: AiError.Unknown(… "Provider not found")` — `verify` returns `null`
     for **a key that works**, so every good key in onboarding was reported as a missing provider.
@@ -958,6 +978,18 @@ One line each. Full text in `docs/HISTORY_2026-07_to_08.md`.
 > an interval from any date above that line.
 
 ```
+2026-08-30-E  **The fallback chooser reaches chat**, and the share-link guard is repaired. The
+              owner's Gemini key was fixed by the sanitizer's own rule (he re-pasted it) and the
+              provider then returned a real **429 quota** error — which is exactly the case the
+              28 August ruling was written for, and chat had no chooser. `ChatViewModel` gained
+              `router`, `fallbackOptions`, `triedThisTurn`, `chooseFallback`, `tryAnyFallback`
+              and `retry`; `sendMessage` split into "append the turn" + `runCompletion(provider)`
+              so a retry and a fallback are one operation with a different argument. Chat's
+              fallback **persists the choice** (a conversation continues; Clarify's answers one
+              question) — §10 entry 47. Separately, `ShareCard`'s readiness test now checks the
+              URL's shape rather than the absence of the placeholder, after the owner replaced
+              the whole string with his repository's `.git` clone URL and the old test passed it
+              — §10 entry 48.
 2026-08-30-D  **M5.2 — the batch the Gemini failure paid for.** Three owner requests
               (2026-08-30): the share button now shares the **GitHub download link**; the request
               body in Developer Mode gained a copy button per part; **every provider error gained
