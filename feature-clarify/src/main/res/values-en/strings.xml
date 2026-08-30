@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="clarify_title">Interrogate the idea</string>
+    <string name="clarify_back">Back</string>
+    <string name="clarify_idea_label">Your idea, as it arrived</string>
+
+    <string name="clarify_kind_question">Question</string>
+    <string name="clarify_kind_suggestion">Suggestion</string>
+    <string name="clarify_kind_caveat">Caveat</string>
+    <string name="clarify_kind_enough">Nothing further to ask</string>
+    <string name="clarify_kind_you">You</string>
+
+    <string name="clarify_show_conversation">Show the interrogation</string>
+    <string name="clarify_hide_conversation">Hide the interrogation</string>
+    <string name="clarify_copy_prompt">Copy the prompt</string>
+    <string name="clarify_copy_result">Copy the answer</string>
+
+    <string name="clarify_analyzing">Thinking about your idea…</string>
+    <string name="clarify_input_hint">Type your answer…</string>
+    <string name="clarify_send">Send</string>
+    <string name="clarify_voice">Answer by voice</string>
+    <string name="clarify_retry">Try again</string>
+
+    <string name="clarify_ready">The idea is ready</string>
+
+    <string name="clarify_forging">Forging the prompt…</string>
+    <string name="clarify_forge_framework">Framework:</string>
+    <string name="clarify_forge_prompt">Prompt (editable)</string>
+    <string name="clarify_forge_swap">Swap the framework and rewrite:</string>
+    <string name="clarify_forge_regenerate">Regenerate</string>
+    <string name="clarify_forge_execute">Run the prompt</string>
+    <string name="clarify_forge_result">Answer</string>
+    <string name="clarify_options_hint">Or type your own answer below</string>
+    <string name="clarify_forge_english_note">The prompt is English by rule; the answer comes back in Arabic.</string>
+
+    <string name="clarify_dev_turns">Clarify turns: %1$d · model: %2$s</string>
+    <string name="clarify_dev_timing">Interrogation: %1$d s · to answer: %2$d s</string>
+    <string name="clarify_dev_options">Options on this question: %1$d</string>
+    <string name="clarify_dev_options_none">No options · last line written: "%1$s"</string>
+
+    <string name="clarify_translate">Translate to Arabic</string>
+    <string name="clarify_show_original">Show the original</string>
+    <string name="clarify_translating">Translating…</string>
+    <string name="clarify_rerun_with">Answer again with another provider:</string>
+    <string name="clarify_feedback_hint">Adjust the answer: shorten it, expand it, focus on…</string>
+    <string name="clarify_feedback_send">Send the adjustment</string>
+    <string name="clarify_feedback_voice">Dictate the adjustment</string>
+    <string name="clarify_dev_feedback">Feedback rounds: %1$d</string>
+    <string name="clarify_dev_arabic_ratio">Arabic in the answer: %1$d%% · the translate button shows below 20%%</string>
+    <string name="clarify_forge_clear">Clear</string>
+    <string name="clarify_forge_undo_clear">Undo the clear</string>
+
+    <string name="clarify_readback">Listen</string>
+    <string name="clarify_readback_stop">Stop</string>
+
+    <string name="clarify_from_history">Saved session — reopened from history</string>
+    <string name="clarify_restoring">Restoring the session…</string>
+    <string name="clarify_restore_failed_title">This session no longer exists</string>
+    <string name="clarify_restore_failed_hint">It looks like it was deleted. Go back to history and pick another, or start a new idea.</string>
+    <string name="clarify_fallback_prompt">Pick a provider to continue the answer:</string>
+    <string name="clarify_fallback_any">Try any</string>
+
+    <string name="clarify_readback_follow">Follow along</string>
+    <string name="clarify_readback_no_voice">No Arabic voice is installed on your phone, so it cannot read the answer aloud. Install one once and come back.</string>
+    <string name="clarify_readback_install_voice">Open speech settings</string>
+    <string name="clarify_readback_no_engine">This device has no speech engine. This cannot be fixed from inside the app.</string>
+    <string name="clarify_readback_failed">Reading failed (code %1$d). Try again; if it repeats, send me the code.</string>
+    <string name="clarify_dev_reader">Speech engine: %1$s · language code: %2$s · word positions: %3$s</string>
+    <string name="clarify_dev_reader_words_yes">yes</string>
+    <string name="clarify_dev_reader_words_no">not reported</string>
+</resources>

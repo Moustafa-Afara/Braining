@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    BRAND §7.1: adaptive icon over an indigo900 background, plus a monochrome layer for
+    themed icons. The <monochrome> element is ignored by launchers below Android 13 and is
+    what makes the mark survive there rather than being flattened into a blob.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>

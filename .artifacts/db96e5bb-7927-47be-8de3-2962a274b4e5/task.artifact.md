@@ -1,0 +1,3 @@
+- [x] Update `settings.gradle.kts` to use `includeBuild("build-logic")`
+- [x] Remove `include(":build-logic:convention")` from `settings.gradle.kts`
+- [/] Run Gradle Sync to verify the fix

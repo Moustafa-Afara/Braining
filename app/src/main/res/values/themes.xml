@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        AppCompat descendant, required by AppCompatActivity (MainActivity) — a platform
+        theme (android:Theme.Material.Light.NoActionBar) makes AppCompatActivity throw
+        "You need to use a Theme.AppCompat theme". The Light flavour matches the previous
+        theme's behaviour; Compose draws the actual UI and system bars via edge-to-edge.
+    -->
+    <style name="Theme.Braining" parent="Theme.AppCompat.Light.NoActionBar" />
+</resources>

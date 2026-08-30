@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Adaptive-icon FOREGROUND — a literal conversion of assets/logo/icon-foreground.svg.
+
+    BRAND §1: "Do not redraw, restyle, or 'improve' the mark — use the supplied SVGs." So the
+    viewport is 512×512, matching the SVG, and every coordinate below is the SVG's own. The
+    previous version of this file was a hand-drawn approximation on a 108 viewport with
+    SQUARE-CORNERED bars, and its dot sat off-centre; the mark's bars are stadiums (the SVG's
+    rx=14 on a 29-wide rect is a fully rounded end). VectorDrawable has no <rect>, so each bar
+    is the equivalent path: start at the top-left corner + r, then alternate straight runs with
+    quarter-turn arcs.
+
+    Colours are literal here and cannot come from the Compose theme — a launcher icon is
+    rasterised by the system launcher, outside any Compose scope. They are BrandPalette's
+    Indigo200 / Indigo100 / Amber500 (docs/BRAND.md §2), and this is the one place BRAND §7.2's
+    "no hex outside the theme" rule cannot apply. Keep them in step with Color.kt by hand.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Outer bars — indigo200 -->
+    <path
+        android:fillColor="#AFA9EC"
+        android:pathData="M155,250 h1 a14,14 0 0 1 14,14 v38 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-38 a14,14 0 0 1 14,-14 z" />
+    <path
+        android:fillColor="#AFA9EC"
+        android:pathData="M369,250 h1 a14,14 0 0 1 14,14 v38 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-38 a14,14 0 0 1 14,-14 z" />
+
+    <!-- Inner bars — indigo100 -->
+    <path
+        android:fillColor="#CECBF6"
+        android:pathData="M208,225 h1 a14,14 0 0 1 14,14 v87 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-87 a14,14 0 0 1 14,-14 z" />
+    <path
+        android:fillColor="#CECBF6"
+        android:pathData="M315,225 h1 a14,14 0 0 1 14,14 v87 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-87 a14,14 0 0 1 14,-14 z" />
+
+    <!-- Centre bar and the nuqta — amber500, the insight accent -->
+    <path
+        android:fillColor="#EF9F27"
+        android:pathData="M262,196 h1 a14,14 0 0 1 14,14 v145 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-145 a14,14 0 0 1 14,-14 z" />
+    <path
+        android:fillColor="#EF9F27"
+        android:pathData="M262,143 a18,18 0 1 1 0,36 a18,18 0 1 1 0,-36 z" />
+</vector>

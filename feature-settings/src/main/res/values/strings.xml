@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Default locale = ARABIC (ANSWERS.md §12). English lives in values-en/.
+    Titles are no longer bilingual («الإعدادات — Settings»): that was a workaround for the
+    absence of real localization. Each locale now carries its own wording.
+-->
+<resources>
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_providers_heading">مزوّدو الذكاء الاصطناعي</string>
+    <string name="settings_providers_subtitle">أدخل مفتاح كل خدمة تملكها. المفاتيح مشفّرة على جهازك ولا تغادره.</string>
+    <string name="settings_gemini_recommendation">مجاناً — يُنصح بالبدء بهذا</string>
+    <string name="settings_label_model">النموذج</string>
+    <string name="settings_label_api_key">مفتاح API</string>
+    <string name="settings_speech_title">تفريغ الصوت — Deepgram</string>
+    <string name="settings_speech_subtitle">مفتاح اختياري لتحسين دقّة تفريغ العربية. بدونه يعمل التطبيق بمحرّك الجهاز.</string>
+    <string name="settings_speech_saved">المفتاح محفوظ ومشفَّر على جهازك.</string>
+    <string name="settings_licences_title">التراخيص</string>
+    <string name="settings_font_attribution">خط IBM Plex Sans Arabic — حقوق النشر © 2017 لشركة IBM، باسم خطّ محجوز «Plex». مرخَّص بموجب رخصة SIL للخطوط المفتوحة، الإصدار 1.1.</string>
+    <string name="settings_licence_show">عرض نصّ الترخيص</string>
+    <string name="settings_licence_hide">إخفاء نصّ الترخيص</string>
+    <string name="settings_action_verify">تحقّق</string>
+    <string name="settings_key_show">إظهار المفتاح</string>
+    <string name="settings_key_hide">إخفاء المفتاح</string>
+    <string name="settings_key_valid">المفتاح صالح</string>
+    <string name="settings_key_invalid">المفتاح غير صالح</string>
+
+    <string name="settings_developer_heading">وضع المطوّر</string>
+    <string name="settings_developer_label">إظهار تفاصيل كل طلب</string>
+    <string name="settings_developer_description">يعرض تحت كل رد: عدد الأجزاء، وزمن أول جزء، والزمن الكلي، والمسار، وجسم الطلب، وعدد الرموز. المفاتيح مُعقّمة دائماً ولا تظهر.</string>
+
+    <string name="settings_language_heading">اللغة</string>
+    <string name="settings_language_arabic">العربية</string>
+    <string name="settings_language_english">الإنجليزية</string>
+    <string name="settings_profile_title">نبذة عنك</string>
+    <string name="settings_profile_subtitle">سطران أو ثلاثة: من أنت، وما طبيعة ما تطلبه عادةً. يقرأها استجواب الفكرة وصياغة البرومبت فقط — لا تُرسل في المحادثة العادية، ولا تغادر جهازك.</string>
+    <string name="settings_profile_placeholder">مثال: معلّم لغة إنجليزية، وأب لطفلين. أطلب غالباً خططاً عملية قصيرة لا أبحاثاً أكاديمية.</string>
+    <string name="settings_profile_counter">%1$d / %2$d</string>
+
+    <!-- M5 · back button, closing a §9 item: the screen had no visible way out. -->
+    <string name="settings_back">رجوع</string>
+
+    <!-- M5 · history. The size stands in place of a hard cap (ANSWERS.md Part 1 §10). -->
+    <string name="settings_history_title">سجلّ الجلسات</string>
+    <string name="settings_history_subtitle">كل فكرة نضجت ونُفِّذت تُحفظ على جهازك وحده — لا تُرسل إلى أي خادم. تبقى حتى تحذفها أنت.</string>
+    <string name="settings_history_storage">الحجم على جهازك: %1$s %2$s</string>
+    <string name="settings_history_open">افتح السجلّ</string>
+    <string name="settings_unit_bytes">بايت</string>
+    <string name="settings_unit_kilobytes">ك.ب</string>
+    <string name="settings_unit_megabytes">م.ب</string>
+    <string name="settings_unit_gigabytes">غ.ب</string>
+
+    <!-- M5 · readback. The description says what the switch does NOT do, on purpose. -->
+    <string name="settings_readback_title">قراءة الجواب بصوت</string>
+    <string name="settings_readback_description">يُظهر زرّ استماع تحت الجواب. لا ينطق التطبيق شيئاً من تلقاء نفسه — الزرّ وحده يشغّل الصوت. يحتاج صوتاً عربياً مثبَّتاً على هاتفك.</string>
+
+    <!-- M5 · first-run flow (ANSWERS.md Part 3 §A/§B, Part 11 §K4). -->
+    <!-- The name is NOT written here. `%1$s` is core-ui's `app_name`, so this greeting says
+         «فهم» on an Arabic phone and «Braining» on an English one without a second string to
+         keep in step. -->
+    <string name="onboarding_title">أهلاً بك في %1$s</string>
+    <string name="onboarding_what">تحدّث بفكرتك بالعربية، فيستجوبك التطبيق حتى تنضج، ثم يصوغها برومبت احترافياً وينفّذه ويعيد لك الجواب بالعربية.</string>
+    <string name="onboarding_why_key">يحتاج التطبيق مفتاحاً واحداً على الأقل من إحدى خدمات الذكاء الاصطناعي. المفتاح يبقى مشفَّراً على هاتفك ولا يغادره إلا إلى خدمته.</string>
+    <string name="onboarding_where_gemini">Google Gemini — فيه خطّة مجانية بلا بطاقة ائتمان. احصل على المفتاح من موقع Google AI Studio.</string>
+    <string name="onboarding_where_anthropic">Claude — من لوحة تحكّم Anthropic، قسم API Keys. مدفوع.</string>
+    <string name="onboarding_where_openai">ChatGPT — من لوحة تحكّم OpenAI، قسم API keys. مدفوع.</string>
+    <string name="onboarding_where_deepseek">DeepSeek — من منصّة DeepSeek، قسم API keys. مدفوع وزهيد الكلفة.</string>
+    <string name="onboarding_gemini_region">تنبيه: ترفض Gemini الطلبات من بعض الدول برسالة «المنطقة غير مدعومة». إن حدث ذلك معك فاختر مزوّداً آخر من الأعلى — التطبيق يعمل بأي منها.</string>
+    <string name="onboarding_privacy">لا يُحفظ صوتك أبداً. جلساتك تُحفظ على جهازك وحده، ويمكنك حذفها متى شئت من الإعدادات.</string>
+    <string name="onboarding_start">ابدأ</string>
+    <string name="onboarding_skip">تخطَّ الآن</string>
+    <!-- M5.1 · the way back. Choosing a language used to be permanent and unreversible. -->
+    <string name="settings_language_system">لغة الجهاز</string>
+    <string name="settings_language_system_hint">التطبيق يتبع لغة هاتفك ما لم تختر غير ذلك.</string>
+</resources>

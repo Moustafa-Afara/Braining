@@ -1,0 +1,108 @@
+[versions]
+agp = "8.13.0"
+kotlin = "2.3.10"
+coreKtx = "1.15.0"
+lifecycleRuntime = "2.8.7"
+activityCompose = "1.10.1"
+composeBom = "2026.06.01"
+hilt = "2.58"
+hiltNavigationCompose = "1.2.0"
+ktor = "3.5.1"
+kotlinxSerialization = "1.11.0"
+kotlinxCoroutines = "1.9.0"
+datastore = "1.1.1"
+# Room 2.8.4 — raised from 2.6.1 on 2026-08-28 because **2.6.1 cannot run under KSP2**.
+# 2.6.1 is from November 2023 and predates KSP2 entirely; KSP2 support arrived in Room 2.7.0
+# (April 2025), whose release note reads: "Support for KSP2 is also added and is recommended
+# when using Room with Kotlin 2.0 or higher." This project runs Kotlin 2.3.10 and KSP2
+# (the failure names `KspAAWorkerAction` — AA = the Analysis API, i.e. KSP2), and the crash
+# was `IllegalStateException: unexpected jvm signature V`, a known KSP2 fault.
+#
+# This OVERRIDES `PROJECT_STATE.md` §8's "use it; do not upgrade it" — that line was written
+# before anyone had tried to run Room here at all (§0 rule 5: the code wins).
+room = "2.8.4"
+navigation = "2.8.5"
+ksp = "2.3.10"
+securityCrypto = "1.1.0-alpha06"
+# The owner approved androidx.appcompat on 2026-08-03 for the in-app Arabic/English toggle:
+# AppCompatDelegate.setApplicationLocales is the only per-app locale path on minSdk 26.
+# 1.7.1 is the latest stable (1.8.0 still alpha as of 2026-04-08) and needs compileSdk 34+,
+# so it does not force any other version in this catalog.
+appcompat = "1.7.1"
+junit = "4.13.2"
+junitExt = "1.2.1"
+espresso = "3.6.1"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntime" }
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleRuntime" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntime" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+
+# Compose
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+
+# Navigation
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+
+# Hilt
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+
+# Ktor
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+# WebSockets — Deepgram's live transcription is a socket, not a request/response.
+# Verified to exist on Maven Central at 3.5.0 before being added (hard constraint 2 — an agent
+# once invented `ktor-client-sse`, which does not exist, and it cost a day).
+# Used only by :speech.
+ktor-client-websockets = { group = "io.ktor", name = "ktor-client-websockets", version.ref = "ktor" }
+
+# Serialization
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+
+# Coroutines
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+
+# DataStore
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+
+# Room
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+# `room-ktx` is DELIBERATELY not declared any more. From Room 2.7.0-alpha01: "The KTX artifact
+# androidx.room:room-ktx has been merged to androidx.room:room-runtime along with all its APIs,
+# the artifact is now blank. Please remove it from your dependency list."
+
+# Security
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
+
+# AppCompat — in-app language switch via AppCompatDelegate.setApplicationLocales
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+
+# Testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

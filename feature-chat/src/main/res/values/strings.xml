@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Default locale = ARABIC (ANSWERS.md §12). English lives in values-en/.
+    Every user-facing string in feature-chat belongs here; never hardcode text in Kotlin.
+    Names are prefixed `chat_` because library resources are merged into a single app
+    namespace, and an unprefixed name can be silently overridden by another module.
+-->
+<resources>
+    <string name="chat_title">Braining</string>
+    <string name="chat_input_hint">اكتب رسالتك…</string>
+    <string name="chat_action_settings">الإعدادات</string>
+    <string name="chat_action_clear">مسح المحادثة</string>
+    <string name="chat_action_send">إرسال</string>
+    <string name="chat_action_stop">إيقاف التوليد</string>
+    <!-- M3 entry. Clarify is a mode you choose, not the only road (ANSWERS.md Part 7 §M3-1). -->
+    <string name="chat_action_clarify">استجوب الفكرة</string>
+    <string name="chat_action_copy">نسخ</string>
+    <!-- Rewinds the conversation to this message. Destructive — ruling of 2026-08-07. -->
+    <string name="chat_action_edit">تعديل وإعادة الإرسال</string>
+    <string name="chat_provider_selector">اختيار المزوّد</string>
+    <!-- Shown inside an assistant bubble that has been created but has no text yet. -->
+    <string name="chat_message_pending">…</string>
+
+    <!--
+        The A3 `chat_error_*` strings moved to core-ui as `error_*` on 2026-08-04, together
+        with AiErrorMessage.kt — see PROJECT_STATE.md §10 entry 2026-08-04-B. Do not
+        reintroduce them here: Settings phrases the same failures, and keeping the wording in
+        a feature module is what forced feature-settings to depend on feature-chat.
+    -->
+
+    <!--
+        M2 voice capture. The rationale string is shown BEFORE the system permission dialog,
+        per docs/M2_DESIGN_NOTE.md §6 — the user should know why the microphone is wanted and
+        that the audio stays on the device before Android asks a question they cannot un-answer.
+    -->
+    <string name="chat_action_voice">إملاء صوتي</string>
+    <string name="voice_dev_segments">مقاطع التفريغ: %1$d · المدة: %2$d ثانية</string>
+    <string name="voice_dev_engine">محرّك التعرّف: %1$s · %2$s</string>
+    <string name="voice_dev_engine_online">عبر الشبكة</string>
+    <string name="voice_dev_engine_offline">على الجهاز</string>
+    <string name="voice_dev_engine_pending">لغة التعرّف المطلوبة: %1$s · لم يبدأ تسجيل بعد</string>
+
+    <!--
+        The Developer Mode `chat_dev_*` strings moved to core-ui as `dev_*` on 2026-08-07,
+        together with DiagnosticsPanel — see PROJECT_STATE.md §10 entry 2026-08-07-E. Do not
+        reintroduce them here: Clarify shows the same panel, and keeping the wording in a
+        feature module is exactly what once forced feature-settings to depend on feature-chat.
+
+        `chat_dev_details` was dropped rather than moved — nothing had referenced it since
+        Developer Mode shipped in 2026-07-29-D.
+    -->
+    <!-- M5 · the way into the saved-session list. -->
+    <string name="chat_action_history">السجلّ</string>
+</resources>

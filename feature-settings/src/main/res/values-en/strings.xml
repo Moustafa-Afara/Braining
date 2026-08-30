@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English overrides. The Arabic originals are the default, in values/. -->
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_providers_heading">AI providers</string>
+    <string name="settings_providers_subtitle">Enter a key for each service you have. Keys are encrypted on your device and never leave it.</string>
+    <string name="settings_gemini_recommendation">Free tier — recommended to start</string>
+    <string name="settings_label_model">Model</string>
+    <string name="settings_label_api_key">API key</string>
+    <string name="settings_speech_title">Speech transcription — Deepgram</string>
+    <string name="settings_speech_subtitle">Optional key for more accurate Arabic transcription. Without it the app uses the device engine.</string>
+    <string name="settings_speech_saved">Key saved and encrypted on your device.</string>
+    <string name="settings_licences_title">Licences</string>
+    <string name="settings_font_attribution">IBM Plex Sans Arabic — Copyright © 2017 IBM Corp. with Reserved Font Name "Plex". Licensed under the SIL Open Font License, Version 1.1.</string>
+    <string name="settings_licence_show">Show licence text</string>
+    <string name="settings_licence_hide">Hide licence text</string>
+    <string name="settings_action_verify">Verify</string>
+    <string name="settings_key_show">Show key</string>
+    <string name="settings_key_hide">Hide key</string>
+    <string name="settings_key_valid">Key is valid</string>
+    <string name="settings_key_invalid">Key is invalid</string>
+
+    <string name="settings_developer_heading">Developer Mode</string>
+    <string name="settings_developer_label">Show request details</string>
+    <string name="settings_developer_description">Under each reply: chunk count, first-chunk latency, total latency, endpoint, request body and token usage. API keys are always redacted and never shown.</string>
+
+    <string name="settings_language_heading">Language</string>
+    <string name="settings_language_arabic">Arabic</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_profile_title">About you</string>
+    <string name="settings_profile_subtitle">Two or three lines: who you are, and what you usually ask for. Read by the interrogation and the prompt forge only — never sent with a plain chat message, and it never leaves your device.</string>
+    <string name="settings_profile_placeholder">For example: an English teacher and a father of two. I usually want short practical plans, not academic research.</string>
+    <string name="settings_profile_counter">%1$d / %2$d</string>
+
+    <string name="settings_back">Back</string>
+
+    <string name="settings_history_title">Session history</string>
+    <string name="settings_history_subtitle">Every idea you mature and run is saved on this device only — never sent to any server. It stays until you delete it.</string>
+    <string name="settings_history_storage">Size on your device: %1$s %2$s</string>
+    <string name="settings_history_open">Open history</string>
+    <string name="settings_unit_bytes">bytes</string>
+    <string name="settings_unit_kilobytes">KB</string>
+    <string name="settings_unit_megabytes">MB</string>
+    <string name="settings_unit_gigabytes">GB</string>
+
+    <string name="settings_readback_title">Read the answer aloud</string>
+    <string name="settings_readback_description">Adds a listen button under the answer. The app never speaks on its own — only the button starts audio. Requires an Arabic voice installed on your phone.</string>
+
+    <string name="onboarding_title">Welcome to %1$s</string>
+    <string name="onboarding_what">Speak your idea in Arabic. The app interrogates it until it is mature, forges a professional English prompt from it, runs it, and gives you the answer in Arabic.</string>
+    <string name="onboarding_why_key">You need at least one key from an AI service. The key stays encrypted on your phone and leaves only for its own service.</string>
+    <string name="onboarding_where_gemini">Google Gemini — has a free tier with no credit card. Get a key from Google AI Studio.</string>
+    <string name="onboarding_where_anthropic">Claude — from the Anthropic console, API Keys. Paid.</string>
+    <string name="onboarding_where_openai">ChatGPT — from the OpenAI dashboard, API keys. Paid.</string>
+    <string name="onboarding_where_deepseek">DeepSeek — from the DeepSeek platform, API keys. Paid, and inexpensive.</string>
+    <string name="onboarding_gemini_region">Note: Gemini refuses requests from some countries with a "location is not supported" message. If that happens, pick another provider above — the app works with any of them.</string>
+    <string name="onboarding_privacy">Your audio is never saved. Your sessions are stored on this device only, and you can delete them any time from Settings.</string>
+    <string name="onboarding_start">Start</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="settings_language_system">Device language</string>
+    <string name="settings_language_system_hint">The app follows your phone\'s language unless you choose otherwise.</string>
+</resources>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:name=".BrainingApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Braining">
+
+        <!--
+            `tools:ignore="Instantiatable"` — a lint FALSE POSITIVE, silenced here and nowhere
+            wider. Added 2026-08-30, on the first `assembleRelease` this project has ever run.
+
+            **What lint claims:** "MainActivity must extend android.app.Activity".
+            **What is true:** `MainActivity : AppCompatActivity()`, and `AppCompatActivity`
+            extends `FragmentActivity` → `ComponentActivity` → `android.app.Activity`. The class
+            is public, has the implicit no-arg constructor, and is not an inner class.
+
+            **The evidence that settles it is not an argument, it is a fact:** the debug APK has
+            been installed and opened on the owner's phone dozens of times. Android instantiated
+            this activity every one of them. A class the platform has actually constructed cannot
+            be uninstantiatable.
+
+            **Why lint gets it wrong.** Two candidates and it is not worth another build to
+            separate them: `@AndroidEntryPoint` makes Hilt rewrite the superclass to a generated
+            `Hilt_MainActivity` in bytecode, which lint may not have in scope — or lint cannot
+            resolve `AppCompatActivity`'s hierarchy out of the AAR. Note that `.BrainingApp` on
+            the `<application>` tag did NOT trip the same check, and it extends a *framework*
+            class directly rather than a library one. That asymmetry points at resolution, not at
+            the code.
+
+            **Why it appears only now:** `lintVitalRelease` runs on release builds alone, and
+            until 2026-08-30 this project had only ever built debug. The false positive has
+            presumably been true for months.
+
+            **Why `tools:ignore` and not `lint { disable += "Instantiatable" }`:** this silences
+            exactly one declaration. Every other component — the application class, and any
+            service or receiver added later — is still checked, and a real uninstantiatable class
+            will still fail the release build. Disabling the rule module-wide would trade one
+            false positive for a permanently blind check.
+
+            **If this is ever revisited:** delete the attribute and run `assembleRelease`. If
+            lint has learned to resolve the hierarchy, it passes and this comment goes with it.
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Braining"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

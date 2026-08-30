@@ -1,0 +1,55 @@
+{
+  "_comment": "The FORGE library. Data, not code — docs/PROMPT_FRAMEWORKS.md §5 requires that a new framework be addable 'without code changes', and a `when` over framework names in Kotlin would have broken that on day one. Mirrors §1 (the catalogue) and §2 (the task-type routing table) of that document; if the two ever disagree, the document is the spec and this file is wrong. `taskTypes` carries §2's mapping so the routing lives beside the thing it routes to instead of in a second table that can drift.",
+
+  "frameworks": [
+    {
+      "id": "CO-STAR",
+      "arabicName": "كو-ستار",
+      "shape": "Context · Objective · Style · Tone · Audience · Response-format",
+      "bestFor": "Consultation, summaries, writing, business and finance explainers, teaching.",
+      "taskTypes": ["idea-discussion", "entrepreneurship", "finance", "teaching", "consultation"]
+    },
+    {
+      "id": "RTF",
+      "arabicName": "دور-مهمة-صيغة",
+      "shape": "Role · Task · Format",
+      "bestFor": "Short, well-scoped requests where heavy scaffolding is overkill.",
+      "taskTypes": ["quick-task"]
+    },
+    {
+      "id": "ReAct",
+      "arabicName": "تفكير-وفعل",
+      "shape": "Interleaved Reasoning and Actions with observations",
+      "bestFor": "Agentic work, web research, and anything that uses tools or acts on files.",
+      "taskTypes": ["research", "automation", "agent-task"]
+    },
+    {
+      "id": "Chain-of-Thought",
+      "arabicName": "سلسلة التفكير",
+      "shape": "Explicit step-by-step reasoning, or decomposition into sub-problems",
+      "bestFor": "Analysis, planning, scientific reasoning, architecture decisions.",
+      "taskTypes": ["systems-analysis", "planning", "scientific-research"]
+    },
+    {
+      "id": "Anthropic-structure",
+      "arabicName": "البنية الوسمية",
+      "shape": "XML-like tags delimiting sections + few-shot examples + an explicit output contract",
+      "bestFor": "Complex builds, precise output formats, and anything Claude will execute.",
+      "taskTypes": ["software-build", "scientific-research"]
+    },
+    {
+      "id": "TAG",
+      "arabicName": "مهمة-فعل-هدف",
+      "shape": "Task · Action · Goal",
+      "bestFor": "Automation and digital-transformation requests framed around an outcome.",
+      "taskTypes": ["automation", "digital-transformation"]
+    },
+    {
+      "id": "Persona-FewShot",
+      "arabicName": "شخصية وأمثلة",
+      "shape": "A strong role persona plus 2–5 worked examples",
+      "bestFor": "Style or skill transfer: language teaching, coaching, discussion partners.",
+      "taskTypes": ["teaching", "entrepreneurship", "idea-discussion"]
+    }
+  ]
+}

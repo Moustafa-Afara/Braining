@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="history_title">History</string>
+    <string name="history_back">Back</string>
+    <string name="history_open">Open history</string>
+
+    <string name="history_search_label">Search your sessions</string>
+    <string name="history_search_hint">A word from your idea or the answer</string>
+    <string name="history_search_clear">Clear search</string>
+
+    <string name="history_loading">Opening history…</string>
+    <string name="history_empty_title">No saved sessions yet</string>
+    <string name="history_empty_hint">Every idea you mature and run is saved here automatically, so you can search it and run it again later.</string>
+    <string name="history_no_results_title">Nothing matches that search</string>
+    <string name="history_no_results_hint">Try a shorter word. Search ignores hamzas and diacritics, so «احمد» finds «أحمد».</string>
+
+    <string name="history_rerun">Run again</string>
+    <string name="history_delete_one">Delete this session</string>
+    <string name="history_delete_all">Delete all</string>
+    <string name="history_deleted">Deleted: %1$s</string>
+    <string name="history_undo">Undo</string>
+    <string name="history_undo_dismiss">Dismiss</string>
+
+    <string name="history_delete_all_title">Delete all history</string>
+    <plurals name="history_delete_all_body">
+        <item quantity="one">1 session will be permanently deleted. This cannot be undone.</item>
+        <item quantity="other">%1$d sessions will be permanently deleted. This cannot be undone.</item>
+    </plurals>
+    <string name="history_delete_all_confirm">Delete all</string>
+    <string name="history_delete_all_cancel">Cancel</string>
+
+    <string name="history_age_today">Today</string>
+    <string name="history_age_yesterday">Yesterday</string>
+    <plurals name="history_age_days">
+        <item quantity="one">1 day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="history_age_weeks">
+        <item quantity="one">1 week ago</item>
+        <item quantity="other">%1$d weeks ago</item>
+    </plurals>
+    <plurals name="history_age_months">
+        <item quantity="one">1 month ago</item>
+        <item quantity="other">%1$d months ago</item>
+    </plurals>
+
+    <string name="history_storage">History size on your device: %1$s %2$s</string>
+    <string name="unit_bytes">bytes</string>
+    <string name="unit_kilobytes">KB</string>
+    <string name="unit_megabytes">MB</string>
+    <string name="unit_gigabytes">GB</string>
+</resources>

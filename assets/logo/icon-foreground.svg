@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Braining foreground">
+  <rect x="141" y="250" width="29" height="66" rx="14" fill="#AFA9EC"/>
+  <rect x="194" y="225" width="29" height="115" rx="14" fill="#CECBF6"/>
+  <rect x="248" y="196" width="29" height="173" rx="14" fill="#EF9F27"/>
+  <rect x="301" y="225" width="29" height="115" rx="14" fill="#CECBF6"/>
+  <rect x="355" y="250" width="29" height="66" rx="14" fill="#AFA9EC"/>
+  <circle cx="262" cy="161" r="18" fill="#EF9F27"/>
+</svg>

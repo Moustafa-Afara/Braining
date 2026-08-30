@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Declared here rather than in the app module on purpose: the module that needs the
+        permission declares it, so removing :speech removes the permission with it. Library
+        manifests are merged into the app's at build time.
+
+        RECORD_AUDIO is a runtime permission. The request flow, its Arabic rationale, and the
+        permanently-denied path are UI concerns and live in feature-chat — see
+        docs/M2_DESIGN_NOTE.md §6. This line only makes the permission requestable.
+    -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!--
+        Not for networking — Ktor needs no permission to open a socket. This exists solely so a
+        failed Deepgram handshake can be told apart from having no connection at all.
+
+        On 2026-08-06 a deliberately wrong key produced «تحقّق من اتصالك» on a device with full
+        signal, because every handshake failure was being reported as NetworkRequired. That is
+        the fault this whole day was spent on, in miniature: the app reported the symptom it saw
+        instead of the cause. Asking the system whether a network exists turns one ambiguous
+        failure into two honest ones.
+
+        Normal permission — granted at install, no runtime prompt.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!--
+        Android 11+ package visibility: without this, SpeechRecognizer.isRecognitionAvailable()
+        can report false on a device that does have an engine, because the app cannot see the
+        package that provides it. Silent, confusing, and it would present as "no engine".
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+
+</manifest>

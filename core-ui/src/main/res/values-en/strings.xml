@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English overrides. The Arabic originals are the default, in values/. -->
+<resources>
+    <string name="error_missing_key">%1$s: no API key is set. Open Settings and enter the key.</string>
+    <string name="error_invalid_key">%1$s: the API key is invalid (%2$d). Check or replace it in Settings.</string>
+    <string name="error_forbidden">%1$s: access denied (%2$d). Check this key\'s permissions.</string>
+    <string name="error_rate_limited">%1$s: rate limit exceeded (%2$d). Try later or switch provider.</string>
+    <string name="error_provider_down">%1$s: service unavailable right now (%2$d). Try later.</string>
+    <string name="error_no_network">%1$s: no network connection. Check your connection and retry.</string>
+    <string name="error_timeout">%1$s: the request timed out. Try later.</string>
+    <string name="error_region_blocked">%1$s is not available in your region. Switch to another provider in Settings.</string>
+    <string name="error_insufficient_credit">%1$s: the account balance is exhausted (%2$d). Top it up with the provider, or switch provider in Settings.</string>
+    <string name="error_unknown">%1$s: unexpected error%2$s.</string>
+
+    <!-- M2 speech failures. -->
+    <string name="error_speech_permission_denied">Microphone permission is not granted. Enable it in system Settings → Apps → Braining → Permissions.</string>
+    <string name="error_speech_no_engine">This device has no speech recognition engine. Type your request instead.</string>
+    <string name="error_speech_no_speech">No speech was heard. Check that the microphone is not covered and try again.</string>
+    <string name="error_speech_missing_key">No Deepgram key is set. Enter one in Settings, or switch to the device engine.</string>
+    <string name="error_speech_invalid_key">Deepgram rejected the key. Check it in Settings — your network connection is fine.</string>
+    <string name="error_speech_network_required">The recognition engine needs a network connection. Check your connection and try again.</string>
+    <string name="error_speech_language_unavailable">Could not recognise \"%1$s\" under any configuration (code %2$d). Try turning on the internet, or download the speech recognition pack for this language in the Google app\'s settings.</string>
+    <string name="error_speech_engine_failure">Speech recognition failed (%1$d). Try again, or type your request.</string>
+
+    <!-- Developer Mode. Moved from feature-chat on 2026-08-07; see values/strings.xml. -->
+    <string name="dev_summary">Chunks: %1$d · first: %2$d ms · total: %3$d ms</string>
+    <string name="dev_single_chunk">Single chunk — no real streaming happened</string>
+    <string name="dev_endpoint">Endpoint</string>
+    <string name="dev_request">Request body</string>
+    <string name="dev_tokens">Tokens: %1$d in / %2$d out / %3$d total</string>
+    <string name="dev_tokens_missing">The provider reported no token count</string>
+    <string name="dev_no_capture">No request was captured — the fields below are empty because the capture never arrived, not because the request was empty</string>
+
+    <!-- M2 voice sheet. Moved from feature-chat 2026-08-08: Clarify shows the same sheet. -->
+    <string name="voice_listening">Listening…</string>
+    <string name="voice_speak_now">Speak now. Your words appear here and stay editable before you send.</string>
+    <string name="voice_done">Done</string>
+    <string name="voice_cancel">Cancel</string>
+    <string name="voice_permission_title">Microphone permission</string>
+    <string name="voice_permission_rationale">Braining needs the microphone to turn your speech into text. The recognition engine uses its own servers, because they are far more accurate for Arabic; it falls back to on-device transcription when you are offline. Either way, Braining never stores the audio.</string>
+    <string name="voice_permission_allow">Allow</string>
+    <string name="voice_permission_cancel">Not now</string>
+
+    <string name="route_answered_by">Answered by %1$s · %2$s</string>
+    <string name="route_fallback">%1$s failed, so %2$s answered · %3$s</string>
+    <string name="route_needs_pc">This request needs your PC switched on.</string>
+
+    <string name="app_name">Braining</string>
+
+    <string name="dev_request_readable">What was sent, readable</string>
+    <string name="dev_request_show_raw">Show raw JSON</string>
+    <string name="dev_request_hide_raw">Hide raw JSON</string>
+    <string name="dev_part_model">Model</string>
+    <string name="dev_part_system">System instructions</string>
+    <string name="dev_part_user">User</string>
+    <string name="dev_part_assistant">Assistant</string>
+    <string name="dev_part_raw">Could not parse this request — here it is as sent</string>
+    <string name="dev_part_truncated">…%1$d characters trimmed. Open the raw JSON to see all of it.</string>
+
+    <string name="dev_provider_said">What the provider actually said</string>
+    <string name="dev_part_empty">(empty — this part was sent with no text)</string>
+</resources>

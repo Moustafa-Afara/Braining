@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English overrides. The Arabic originals are the default, in values/. -->
+<resources>
+    <!-- The brand name is deliberately identical in both locales. -->
+    <string name="chat_title">Braining</string>
+    <string name="chat_input_hint">Type your message…</string>
+    <string name="chat_action_settings">Settings</string>
+    <string name="chat_action_clear">Clear chat</string>
+    <string name="chat_action_send">Send</string>
+    <string name="chat_action_stop">Stop generating</string>
+    <string name="chat_action_clarify">Interrogate the idea</string>
+    <string name="chat_action_copy">Copy</string>
+    <string name="chat_action_edit">Edit and resend</string>
+    <string name="chat_provider_selector">Select provider</string>
+    <string name="chat_message_pending">…</string>
+
+    <!-- The A3 error strings moved to core-ui as `error_*` on 2026-08-04. -->
+
+    <!-- M2 voice capture -->
+    <string name="chat_action_voice">Voice input</string>
+    <string name="voice_dev_segments">Transcription segments: %1$d · duration: %2$d s</string>
+    <string name="voice_dev_engine">Recognition engine: %1$s · %2$s</string>
+    <string name="voice_dev_engine_online">network</string>
+    <string name="voice_dev_engine_offline">on-device</string>
+    <string name="voice_dev_engine_pending">Recognition language requested: %1$s · no recording yet</string>
+
+    <!-- The Developer Mode strings moved to core-ui as `dev_*` on 2026-08-07. -->
+    <string name="chat_action_history">History</string>
+</resources>

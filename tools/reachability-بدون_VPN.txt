@@ -1,0 +1,15 @@
+﻿
+المزوّد    الحالة التفصيل  زمن(ms)
+-------    ------ -------  -------
+DeepSeek   متاح   HTTP 401     977
+OpenRouter متاح   HTTP 401     575
+Groq       متاح   HTTP 403     608
+Mistral    متاح   HTTP 401     682
+Together   متاح   HTTP 401     706
+Cerebras   متاح   HTTP 401     661
+Cloudflare متاح   HTTP 400     744
+Gemini     متاح   HTTP 404     542
+Anthropic  متاح   HTTP 401     762
+OpenAI     متاح   HTTP 401     656
+
+

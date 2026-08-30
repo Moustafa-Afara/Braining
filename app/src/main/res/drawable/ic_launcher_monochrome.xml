@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Adaptive-icon MONOCHROME layer — required by BRAND §7.1 and absent until 2026-08-04.
+    Android 13+ themed icons and notification badges use this; without it the launcher falls
+    back to a flat silhouette of the whole foreground and the mark disappears.
+
+    Geometry: the FOREGROUND's coordinates, not those of assets/logo/icon-mono.svg. Both files
+    sit inside the adaptive-icon safe zone, but they are drawn at different scales — mono.svg
+    is the full-bleed mark, foreground.svg is the inset one. The monochrome layer has to line
+    up with the layer it replaces, or the icon visibly jumps when the user turns themed icons
+    on. What is taken from icon-mono.svg is its TREATMENT: one colour, with the same alpha
+    ramp (0.55 outer / 0.75 inner / 1.0 centre) that keeps the five bars readable once the hue
+    difference is gone.
+
+    fillColor must be opaque black: the system tints this layer itself, and alpha is expressed
+    per-path via fillAlpha.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <path
+        android:fillAlpha="0.55"
+        android:fillColor="#000000"
+        android:pathData="M155,250 h1 a14,14 0 0 1 14,14 v38 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-38 a14,14 0 0 1 14,-14 z" />
+    <path
+        android:fillAlpha="0.55"
+        android:fillColor="#000000"
+        android:pathData="M369,250 h1 a14,14 0 0 1 14,14 v38 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-38 a14,14 0 0 1 14,-14 z" />
+
+    <path
+        android:fillAlpha="0.75"
+        android:fillColor="#000000"
+        android:pathData="M208,225 h1 a14,14 0 0 1 14,14 v87 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-87 a14,14 0 0 1 14,-14 z" />
+    <path
+        android:fillAlpha="0.75"
+        android:fillColor="#000000"
+        android:pathData="M315,225 h1 a14,14 0 0 1 14,14 v87 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-87 a14,14 0 0 1 14,-14 z" />
+
+    <path
+        android:fillColor="#000000"
+        android:pathData="M262,196 h1 a14,14 0 0 1 14,14 v145 a14,14 0 0 1 -14,14 h-1 a14,14 0 0 1 -14,-14 v-145 a14,14 0 0 1 14,-14 z" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M262,143 a18,18 0 1 1 0,36 a18,18 0 1 1 0,-36 z" />
+</vector>

@@ -1,0 +1,42 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Braining — .gitignore
+#
+# **`build/` and not `/build`.** A leading slash anchors the pattern to the repo
+# root, so `/build` ignored one directory and left `app/build` (257 MB on
+# 2026-08-30), `core-data/build`, and eight more perfectly visible to git. Caught
+# before the first commit; a repository that starts by swallowing a quarter of a
+# gigabyte of generated output never recovers its usefulness.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Build output — every module, not just the root.
+build/
+.gradle/
+.kotlin/
+/captures
+.externalNativeBuild
+.cxx
+/app/release/
+
+# IDE
+*.iml
+.idea/
+.DS_Store
+
+# Machine-specific. `local.properties` holds the SDK path of whoever built last.
+local.properties
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECRETS — the two lines that matter most in this file.
+#
+# `*.jks` is the signing key: losing control of it lets someone else publish an
+# update to an app your friends have installed. `keystore.properties*` carries its
+# password, and the `*` is deliberate — a `.bak` or `.cfg` copy holds exactly the
+# same secret the original does, and a backup is precisely what gets committed by
+# accident.
+# ─────────────────────────────────────────────────────────────────────────────
+*.jks
+*.keystore
+keystore.properties*
+
+# Build logs written by hand for diagnosis.
+build-log*.txt

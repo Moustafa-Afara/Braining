@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Default locale = ARABIC (ANSWERS.md §12). English lives in values-en/.
+
+    A3 classified provider failures, resolved by AiError.toUserMessage() in
+    com.braining.core.ui.error. They live in core-ui rather than in a feature module because
+    both feature-chat and feature-settings phrase them and both already depend on core-ui —
+    see the KDoc on AiErrorMessage.kt and PROJECT_STATE.md §10 entry 2026-08-04-B.
+
+    The prefix is `error_` rather than `chat_`: library resources merge into one app-wide
+    namespace, so the name must be unique but must no longer claim to belong to chat.
+
+    Every message names the provider. The HTTP status appears only where the error carries
+    one — missing key, no network and timeout have no status because nothing was ever sent.
+    RegionBlocked deliberately shows no code: the ruling (ANSWERS.md Part 3 §B) is to state
+    the refusal in plain Arabic and steer the user to another provider.
+-->
+<resources>
+    <string name="error_missing_key">%1$s: لم يُضبط مفتاح API. افتح الإعدادات وأدخل المفتاح.</string>
+    <string name="error_invalid_key">%1$s: المفتاح غير صالح (%2$d). تحقّق منه في الإعدادات أو استبدله.</string>
+    <string name="error_forbidden">%1$s: الوصول مرفوض (%2$d). تحقّق من صلاحيات هذا المفتاح.</string>
+    <string name="error_rate_limited">%1$s: تجاوزت الحصة المسموحة (%2$d). جرّب لاحقاً أو بدّل المزوّد.</string>
+    <string name="error_provider_down">%1$s: الخدمة غير متاحة حالياً (%2$d). جرّب لاحقاً.</string>
+    <string name="error_no_network">%1$s: لا يوجد اتصال بالشبكة. تحقّق من اتصالك ثم أعد المحاولة.</string>
+    <string name="error_timeout">%1$s: استغرق الانتظار طويلاً وانتهت المهلة. جرّب لاحقاً.</string>
+    <string name="error_region_blocked">خدمة %1$s غير متاحة في منطقتك الحالية. بدّل إلى مزوّد آخر من الإعدادات.</string>
+    <string name="error_insufficient_credit">%1$s: نفد رصيد حسابك (%2$d). اشحن الحساب عند المزوّد، أو بدّل إلى مزوّد آخر من الإعدادات.</string>
+    <string name="error_unknown">%1$s: حدث خطأ غير متوقّع%2$s.</string>
+
+    <!--
+        M2 speech failures, resolved by SttError.toUserMessage(). Each one names an action the
+        user can take: a recognition failure is nearly always recoverable, so a message that
+        only reports the failure has done half its job.
+    -->
+    <string name="error_speech_permission_denied">لا يملك التطبيق إذن الميكروفون. فعّله من إعدادات النظام ← التطبيقات ← Braining ← الأذونات.</string>
+    <string name="error_speech_no_engine">لا يوجد محرّك تعرّف على الكلام في هذا الجهاز. اكتب طلبك بدل إملائه.</string>
+    <string name="error_speech_no_speech">لم يُسمَع أي كلام. تأكّد من عدم حجب الميكروفون ثم أعد المحاولة.</string>
+    <string name="error_speech_missing_key">لم يُضبط مفتاح Deepgram. أدخله من الإعدادات، أو بدّل إلى محرّك الجهاز.</string>
+    <string name="error_speech_invalid_key">رفض Deepgram المفتاح. تحقّق منه في الإعدادات — الاتصال بالشبكة سليم.</string>
+    <string name="error_speech_network_required">يحتاج محرّك التعرّف إلى اتصال بالشبكة. تحقّق من اتصالك ثم أعد المحاولة.</string>
+    <string name="error_speech_language_unavailable">تعذّر التعرّف على «%1$s» بأي إعداد (رمز %2$d). جرّب تفعيل الإنترنت، أو نزّل حزمة التعرّف على الكلام لهذه اللغة من إعدادات تطبيق Google.</string>
+    <string name="error_speech_engine_failure">تعذّر التعرّف على الكلام (%1$d). أعد المحاولة، أو اكتب طلبك.</string>
+
+    <!--
+        Developer Mode (ANSWERS.md Part 2 §9), moved here from feature-chat on 2026-08-07 when
+        CLARIFY became the second screen that shows them. Renamed `chat_dev_*` → `dev_*` for the
+        same reason the A3 strings were renamed: the wording is no longer chat's, and a rename
+        turns any missed call site into a compile error instead of a stale duplicate.
+    -->
+    <string name="dev_summary">الأجزاء: %1$d · أول جزء: %2$d ms · الإجمالي: %3$d ms</string>
+    <string name="dev_single_chunk">جزء واحد فقط — لم يحدث بثّ فعلي</string>
+    <string name="dev_endpoint">المسار</string>
+    <string name="dev_request">جسم الطلب</string>
+    <string name="dev_tokens">الرموز: %1$d مُدخلة / %2$d مُولّدة / %3$d إجمالاً</string>
+    <string name="dev_tokens_missing">المزوّد لم يُبلّغ عن عدد الرموز</string>
+    <string name="dev_no_capture">لم يُلتقط أي طلب — الحقول التالية فارغة لأن الالتقاط لم يصل، لا لأن الطلب كان فارغاً</string>
+
+    <!-- M2 voice sheet. Moved from feature-chat 2026-08-08: Clarify shows the same sheet. -->
+    <string name="voice_listening">أستمع…</string>
+    <string name="voice_speak_now">تحدّث الآن. النصّ سيظهر هنا ويبقى قابلاً للتعديل قبل الإرسال.</string>
+    <string name="voice_done">تمّ</string>
+    <string name="voice_cancel">إلغاء</string>
+    <string name="voice_permission_title">إذن الميكروفون</string>
+    <string name="voice_permission_rationale">يحتاج التطبيق إلى الميكروفون لتحويل كلامك إلى نصّ. يستعين محرّك التعرّف بخوادمه لأن دقّته في العربية أعلى بكثير، ويتحوّل إلى التفريغ على جهازك عند انقطاع الإنترنت. لا يحفظ التطبيق الصوت في كل الأحوال.</string>
+    <string name="voice_permission_allow">السماح</string>
+    <string name="voice_permission_cancel">ليس الآن</string>
+
+    <!--
+        M4 routing. `BRAINING.md` §5 requires every routing decision to be visible: which model
+        handled the request, and one line of why. The fallback sentence names BOTH providers on
+        purpose — «أجاب كذا» alone hides the event it exists to report.
+    -->
+    <string name="route_answered_by">أجاب: %1$s · %2$s</string>
+    <string name="route_fallback">تعذّر %1$s، فأجاب %2$s · %3$s</string>
+    <string name="route_needs_pc">هذا الطلب يحتاج حاسبك المشغَّل.</string>
+
+    <!--
+        M5.1 · THE APP'S NAME — one place, two locales.
+
+        The owner's ruling of 2026-08-28: **«فهم» in Arabic, «Braining» in English.** «مِداد» is
+        the name of the visual identity and is deliberately NOT shown to the user; it belongs to
+        `docs/BRAND.md`, not to a screen.
+
+        **It lives here, in `:core-ui`, and not in the app module.** The launcher label could read
+        it from anywhere, but the first-run flow greets the user by the app's name — and a library
+        module cannot see the app module's `R` (§10 entry 18). Every screen depends on `:core-ui`,
+        so this is the one place all of them can read.
+
+        **Never hardcode the name in Kotlin or in another string.** It changes with the device's
+        language, and a copy would freeze one of the two.
+    -->
+    <string name="app_name">فهم</string>
+
+    <!--
+        M5.1 · the readable view of the request body (owner's report, 2026-08-28: the raw JSON
+        "متداخل ببعضه وفيه رموز \n ورموز إنجليزية"). The raw body is kept behind a toggle — it is
+        the bytes, and the readable view is only a description of them.
+    -->
+    <string name="dev_request_readable">ما أُرسل، مقروءاً</string>
+    <string name="dev_request_show_raw">أظهر النصّ الخام (JSON)</string>
+    <string name="dev_request_hide_raw">أخفِ النصّ الخام</string>
+    <string name="dev_part_model">النموذج</string>
+    <string name="dev_part_system">تعليمات النظام</string>
+    <string name="dev_part_user">كلام المستخدم</string>
+    <string name="dev_part_assistant">كلام النموذج</string>
+    <string name="dev_part_raw">لم أستطع تفكيك هذا الطلب — هذا نصّه كما هو</string>
+    <string name="dev_part_truncated">…اختُصر %1$d حرفاً. افتح النصّ الخام لتراه كاملاً.</string>
+
+    <!-- M5.1 · closes the §9 item open since 2026-08-17: the provider's own sentence. -->
+    <string name="dev_provider_said">ما قاله المزوّد حرفياً</string>
+    <string name="dev_part_empty">(فارغ — أُرسل هذا الجزء بلا نصّ)</string>
+</resources>

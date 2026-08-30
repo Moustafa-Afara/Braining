@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Default locale = ARABIC (ANSWERS.md §12). English overrides live in values-en/.
+
+    **`app_name` moved to `:core-ui` on 2026-08-28 and must not come back here.** The launcher
+    label reads it from the merged resource table, which works from anywhere — but the *screens*
+    need it too (the first-run flow greets the user by the app's name), and a library module
+    cannot see the app module's `R` class. That is `PROJECT_STATE.md` §10 entry 18, and it is why
+    the name now lives in the one module every screen already depends on.
+
+    Screen strings live with the screen that uses them; this file is deliberately empty of them.
+-->
+<resources>
+</resources>

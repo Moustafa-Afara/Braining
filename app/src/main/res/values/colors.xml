@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The launcher icon is rasterised by the system launcher, outside any Compose scope, so it
+    cannot read core-ui's BrandPalette. This file is the app module's single definition of the
+    one colour that crosses that boundary — indigo900, docs/BRAND.md §2.
+
+    It is NOT a second palette. Nothing but launcher/manifest resources may reference it, and
+    every in-app colour still comes from MaterialTheme.colorScheme (BRAND §7.2).
+-->
+<resources>
+    <color name="ic_launcher_background">#26215C</color>
+</resources>

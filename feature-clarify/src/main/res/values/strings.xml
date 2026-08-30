@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Arabic is the DEFAULT locale (`values/`), English is the override (`values-en/`).
+  ANSWERS.md §12, as implemented in 2026-07-29-C. Do not "fix" this into `values-ar/`.
+
+  Every name is prefixed `clarify_` because library resources merge into one app-wide
+  namespace and an unprefixed name can be silently overridden by another module.
+-->
+<resources>
+    <string name="clarify_title">استجواب الفكرة</string>
+    <string name="clarify_back">رجوع</string>
+    <string name="clarify_idea_label">فكرتك كما وصلت</string>
+
+    <string name="clarify_kind_question">سؤال</string>
+    <string name="clarify_kind_suggestion">اقتراح</string>
+    <string name="clarify_kind_caveat">تنبيه</string>
+    <!-- The engine has run out of questions. It still does not decide readiness — you do. -->
+    <string name="clarify_kind_enough">لم يبقَ ما أسأل عنه</string>
+    <string name="clarify_kind_you">أنت</string>
+
+    <string name="clarify_show_conversation">اعرض الاستجواب</string>
+    <string name="clarify_hide_conversation">أخفِ الاستجواب</string>
+    <string name="clarify_copy_prompt">انسخ البرومبت</string>
+    <string name="clarify_copy_result">انسخ الجواب</string>
+
+    <string name="clarify_analyzing">يفكّر في فكرتك…</string>
+    <string name="clarify_input_hint">اكتب جوابك…</string>
+    <string name="clarify_send">إرسال</string>
+    <string name="clarify_voice">أجب بالصوت</string>
+    <string name="clarify_retry">أعد المحاولة</string>
+
+    <string name="clarify_ready">نضجت الفكرة</string>
+
+    <!-- FORGE. ANSWERS.md Part 7 §M3-5: a screen every user sees, not a Developer Mode panel. -->
+    <string name="clarify_forging">يصوغ البرومبت…</string>
+    <string name="clarify_forge_framework">الإطار المختار:</string>
+    <string name="clarify_forge_prompt">البرومبت (قابل للتعديل)</string>
+    <string name="clarify_forge_swap">بدّل الإطار وأعد الصياغة:</string>
+    <string name="clarify_forge_regenerate">أعد الصياغة</string>
+    <string name="clarify_forge_execute">نفّذ البرومبت</string>
+    <string name="clarify_forge_result">الجواب</string>
+    <string name="clarify_options_hint">أو اكتب جوابك أنت في الأسفل</string>
+    <!--
+      CORRECTED 2026-08-07. Both of these said the answer comes back in English — true until
+      `2026-08-07-M` made the forged prompt ask for an Arabic reply, and false the moment it
+      shipped. The owner reported «خطأ عند كلمة الجواب — بالإنجليزية» and he was reading the
+      screen correctly: the label had outlived the behaviour it described. Same shape as the
+      Developer Mode line that went on naming the old language after the toggle (`2026-08-06-D`),
+      and the same rule — **a label that describes what the code used to do is a wrong label**.
+    -->
+    <string name="clarify_forge_english_note">البرومبت بالإنجليزية بحكم القاعدة، والجواب يعود بالعربية.</string>
+
+    <!-- Developer Mode only. The two numbers the M3 gate is read against — docs/M3_GATE.md. -->
+    <string name="clarify_dev_turns">أدوار الاستجواب: %1$d · النموذج: %2$s</string>
+    <string name="clarify_dev_timing">زمن الاستجواب: %1$d ث · حتى الجواب: %2$d ث</string>
+    <string name="clarify_dev_options">خيارات هذا السؤال: %1$d</string>
+    <string name="clarify_dev_options_none">بلا خيارات · آخر سطر كتبه: «%1$s»</string>
+
+    <!-- M4: translate on demand, and the follow-up loop. Owner's rulings, 2026-08-17. -->
+    <string name="clarify_translate">ترجم إلى العربية</string>
+    <string name="clarify_show_original">أظهر الأصل</string>
+    <string name="clarify_translating">يترجم…</string>
+    <string name="clarify_rerun_with">أعد الجواب بمزوّد آخر:</string>
+    <string name="clarify_feedback_hint">عدّل الجواب: اختصره، وسّعه، ركّز على…</string>
+    <string name="clarify_feedback_send">أرسل التعديل</string>
+    <string name="clarify_feedback_voice">أملِ التعديل</string>
+    <string name="clarify_dev_feedback">جولات التعديل: %1$d</string>
+    <string name="clarify_dev_arabic_ratio">نسبة العربية في الجواب: %1$d٪ · زر الترجمة يظهر تحت ٢٠٪</string>
+    <string name="clarify_forge_clear">امسح</string>
+    <string name="clarify_forge_undo_clear">تراجع عن المسح</string>
+
+    <!-- M5 · readback (ANSWERS.md Part 1 §7, Part 11 §K3). One button, two labels. -->
+    <string name="clarify_readback">استمع</string>
+    <string name="clarify_readback_stop">أوقف الاستماع</string>
+
+    <!-- M5 · a run reopened from the saved-session list. -->
+    <string name="clarify_from_history">جلسة محفوظة — أعدتَ فتحها من السجلّ</string>
+    <string name="clarify_restoring">أستعيد الجلسة من السجلّ…</string>
+    <string name="clarify_restore_failed_title">لم تعد هذه الجلسة موجودة</string>
+    <string name="clarify_restore_failed_hint">يبدو أنها حُذفت. ارجع إلى السجلّ واختر جلسة أخرى، أو ابدأ فكرة جديدة.</string>
+    <!-- M5.1 · اختيار المزوّد البديل يدوياً (حكم ٢٨ آب، يعكس حكم ١٧ آب بالبديل التلقائي). -->
+    <string name="clarify_fallback_prompt">اختر مزوّداً يُكمل الجواب:</string>
+    <string name="clarify_fallback_any">جرّب أي واحد</string>
+
+    <!-- M5.1 · قراءة الجواب: التتبّع، وأسباب الصمت. -->
+    <string name="clarify_readback_follow">تابع القراءة</string>
+    <string name="clarify_readback_no_voice">لا يوجد صوت عربي مثبَّت على هاتفك، فلا يستطيع قراءة الجواب. ثبّته مرّة واحدة ثم عد.</string>
+    <string name="clarify_readback_install_voice">افتح إعدادات النطق</string>
+    <string name="clarify_readback_no_engine">لا يوجد محرّك نطق على هذا الجهاز. لا يمكن إصلاح هذا من داخل التطبيق.</string>
+    <string name="clarify_readback_failed">تعذّرت القراءة (رمز %1$d). أعد المحاولة، وإن تكرّر فأرسل لي الرمز.</string>
+    <string name="clarify_dev_reader">محرّك النطق: %1$s · رمز اللغة: %2$s · مواضع الكلمات: %3$s</string>
+    <string name="clarify_dev_reader_words_yes">نعم</string>
+    <string name="clarify_dev_reader_words_no">لا يبلّغ عنها</string>
+</resources>

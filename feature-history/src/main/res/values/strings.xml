@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Default locale = ARABIC (ANSWERS.md §12). English lives in values-en/.
+
+    The plurals below carry `zero`/`one`/`two`/`few`/`many`/`other` because Arabic needs all six —
+    a dual («يومان») that no other language in this app has, and a different form again for 3–10
+    and for 11–99. This is the whole reason `RelativeTime` returns a bucket and a number instead
+    of a sentence: nothing in Kotlin could produce these six forms for two locales.
+-->
+<resources>
+    <string name="history_title">السجلّ</string>
+    <string name="history_back">رجوع</string>
+    <string name="history_open">فتح السجلّ</string>
+
+    <string name="history_search_label">ابحث في جلساتك</string>
+    <string name="history_search_hint">كلمة من فكرتك أو من الجواب</string>
+    <string name="history_search_clear">مسح البحث</string>
+
+    <string name="history_loading">أفتح السجلّ…</string>
+    <string name="history_empty_title">لا توجد جلسات محفوظة بعد</string>
+    <string name="history_empty_hint">كل فكرة تنضج وتُنفَّذ تُحفظ هنا تلقائياً، فتستطيع البحث فيها وإعادة تنفيذها لاحقاً.</string>
+    <string name="history_no_results_title">لا شيء يطابق بحثك</string>
+    <string name="history_no_results_hint">جرّب كلمة أقصر. البحث يتجاهل الهمزات والتشكيل، فـ«احمد» تجد «أحمد».</string>
+
+    <string name="history_rerun">أعِد التنفيذ</string>
+    <string name="history_delete_one">حذف هذه الجلسة</string>
+    <string name="history_delete_all">حذف الكل</string>
+    <string name="history_deleted">حُذفت: %1$s</string>
+    <string name="history_undo">تراجع</string>
+    <string name="history_undo_dismiss">إخفاء</string>
+
+    <string name="history_delete_all_title">حذف كل السجلّ</string>
+    <plurals name="history_delete_all_body">
+        <item quantity="zero">لا توجد جلسات لحذفها.</item>
+        <item quantity="one">ستُحذف جلسة واحدة نهائياً. لا يمكن التراجع عن هذا.</item>
+        <item quantity="two">ستُحذف جلستان نهائياً. لا يمكن التراجع عن هذا.</item>
+        <item quantity="few">ستُحذف %1$d جلسات نهائياً. لا يمكن التراجع عن هذا.</item>
+        <item quantity="many">ستُحذف %1$d جلسة نهائياً. لا يمكن التراجع عن هذا.</item>
+        <item quantity="other">ستُحذف %1$d جلسة نهائياً. لا يمكن التراجع عن هذا.</item>
+    </plurals>
+    <string name="history_delete_all_confirm">احذف الكل</string>
+    <string name="history_delete_all_cancel">إلغاء</string>
+
+    <string name="history_age_today">اليوم</string>
+    <string name="history_age_yesterday">أمس</string>
+    <plurals name="history_age_days">
+        <item quantity="zero">اليوم</item>
+        <item quantity="one">أمس</item>
+        <item quantity="two">منذ يومين</item>
+        <item quantity="few">منذ %1$d أيام</item>
+        <item quantity="many">منذ %1$d يوماً</item>
+        <item quantity="other">منذ %1$d يوم</item>
+    </plurals>
+    <plurals name="history_age_weeks">
+        <item quantity="zero">هذا الأسبوع</item>
+        <item quantity="one">منذ أسبوع</item>
+        <item quantity="two">منذ أسبوعين</item>
+        <item quantity="few">منذ %1$d أسابيع</item>
+        <item quantity="many">منذ %1$d أسبوعاً</item>
+        <item quantity="other">منذ %1$d أسبوع</item>
+    </plurals>
+    <plurals name="history_age_months">
+        <item quantity="zero">هذا الشهر</item>
+        <item quantity="one">منذ شهر</item>
+        <item quantity="two">منذ شهرين</item>
+        <item quantity="few">منذ %1$d أشهر</item>
+        <item quantity="many">منذ %1$d شهراً</item>
+        <item quantity="other">منذ %1$d شهر</item>
+    </plurals>
+
+    <string name="history_storage">حجم السجلّ على جهازك: %1$s %2$s</string>
+    <string name="unit_bytes">بايت</string>
+    <string name="unit_kilobytes">ك.ب</string>
+    <string name="unit_megabytes">م.ب</string>
+    <string name="unit_gigabytes">غ.ب</string>
+</resources>

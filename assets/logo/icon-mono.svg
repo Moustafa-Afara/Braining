@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Braining monochrome">
+  <rect x="105" y="236" width="36" height="82" rx="18" fill="currentColor" opacity="0.55"/>
+  <rect x="172" y="205" width="36" height="143" rx="18" fill="currentColor" opacity="0.75"/>
+  <rect x="238" y="169" width="36" height="215" rx="18" fill="currentColor"/>
+  <rect x="304" y="205" width="36" height="143" rx="18" fill="currentColor" opacity="0.75"/>
+  <rect x="371" y="236" width="36" height="82" rx="18" fill="currentColor" opacity="0.55"/>
+  <circle cx="256" cy="123" r="23" fill="currentColor"/>
+</svg>
