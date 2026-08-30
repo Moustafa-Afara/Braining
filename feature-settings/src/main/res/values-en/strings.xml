@@ -60,11 +60,11 @@
     <string name="settings_language_system">Device language</string>
     <string name="settings_language_system_hint">The app follows your phone\'s language unless you choose otherwise.</string>
 
-    <string name="share_download_url">https://github.com/Moustafa-Afara/Braining/releases/latest/download/app-release.apk</string>
+    <string name="share_download_url">https://github.com/USER/REPO/releases/latest/download/app-release.apk</string>
     <string name="share_message">Try Braining — it turns an idea you speak in Arabic into a result, after interrogating it with you until it is mature.\n\nDownload it here:\n%1$s\n\n(You will need one free API key — the app explains how on first launch.)</string>
     <string name="settings_share_title">Share the app</string>
     <string name="settings_share_subtitle">Send the download link to anyone. It always points at the newest version, so it does not go stale.</string>
     <string name="settings_share_action">Share the link</string>
-    <string name="settings_share_not_ready">The download link is not valid. It must end in app-release.apk — check share_download_url, then rebuild.</string>
+    <string name="settings_share_not_ready">The download link is not set yet. Replace USER/REPO in share_download_url with your GitHub repository, then rebuild.</string>
     <string name="settings_version">Version %1$s</string>
 </resources>

@@ -51,11 +51,4 @@
     -->
     <!-- M5 · the way into the saved-session list. -->
     <string name="chat_action_history">السجلّ</string>
-    <!-- M5.2 · who else could answer this. Chat gained the chooser on 2026-08-30, two days
-         after Clarify: the owner met Gemini's quota limit here and the card offered him
-         nothing. Wording matches Clarify's on purpose — the same offer should read the same
-         way on both screens. -->
-    <string name="chat_fallback_prompt">اختر مزوّداً يُجيب بدلاً عنه:</string>
-    <string name="chat_fallback_any">جرّب أي واحد</string>
-    <string name="chat_retry">أعد المحاولة</string>
 </resources>
