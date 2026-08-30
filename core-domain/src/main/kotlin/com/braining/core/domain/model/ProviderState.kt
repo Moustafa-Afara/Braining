@@ -1,5 +1,7 @@
 package com.braining.core.domain.model
 
+import com.braining.core.domain.text.ApiKeySanitizer
+
 data class ProviderState(
     val providerId: ProviderId,
     val isEnabled: Boolean = false,
@@ -19,4 +21,13 @@ data class ProviderState(
      * `AiChunk.Error` is: the domain must not speak for the user interface.
      */
     val error: AiError? = null,
+    /**
+     * What [ApiKeySanitizer] found in the key the user last pasted. Empty when it was clean.
+     *
+     * **Carried on the state rather than applied silently**, because a credential that is quietly
+     * rewritten is one the user cannot reason about when it still fails. On 2026-08-30 a single
+     * em dash inside a Google key produced «حدث خطأ غير متوقّع» and cost two days; the repair now
+     * happens *and says so*.
+     */
+    val keyFixes: List<ApiKeySanitizer.Fix> = emptyList(),
 )

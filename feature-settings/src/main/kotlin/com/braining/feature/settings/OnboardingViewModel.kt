@@ -7,6 +7,7 @@ import com.braining.core.domain.model.ProviderId
 import com.braining.core.domain.provider.AiProvider
 import com.braining.core.domain.store.AppPreferences
 import com.braining.core.domain.store.EncryptedKeyStore
+import com.braining.core.domain.text.ApiKeySanitizer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +31,8 @@ data class OnboardingUiState(
     /** Null = not tried yet. The three states are distinct and the screen shows all three. */
     val verified: Boolean? = null,
     val error: AiError? = null,
+    /** What the sanitizer repaired in the pasted key. See [ApiKeySanitizer]. */
+    val keyFixes: List<ApiKeySanitizer.Fix> = emptyList(),
 )
 
 /**
@@ -58,14 +61,31 @@ class OnboardingViewModel @Inject constructor(
         // switching to Anthropic would offer to verify one provider's key against another's
         // endpoint, and the 401 that came back would read as "your key is wrong".
         _uiState.update {
-            it.copy(provider = providerId, key = "", verified = null, error = null)
+            it.copy(
+                provider = providerId,
+                key = "",
+                verified = null,
+                error = null,
+                keyFixes = emptyList(),
+            )
         }
     }
 
+    /**
+     * **This is the single most important field in the app for a new user**, and the one most
+     * likely to be damaged: they are pasting a credential on a phone, probably out of a browser
+     * or a message, quite possibly beside Arabic text.
+     *
+     * `ApiKeySanitizer` repairs what can only have been one thing and reports the rest. Without
+     * it, a friend whose paste inserted an em dash gets «حدث خطأ غير متوقّع» on their first
+     * attempt at the app and never comes back — which is exactly what happened to the owner on
+     * 2026-08-30, and he had Developer Mode and two days to spend on it.
+     */
     fun updateKey(text: String) {
-        // Trimmed like every key field in this app: a pasted key routinely carries a trailing
-        // newline, and an untrimmed one fails auth in a way that reads as a wrong key.
-        _uiState.update { it.copy(key = text.trim(), verified = null, error = null) }
+        val result = ApiKeySanitizer.sanitize(text)
+        _uiState.update {
+            it.copy(key = result.key, verified = null, error = null, keyFixes = result.fixes)
+        }
     }
 
     /**
@@ -84,8 +104,16 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             keyStore.saveKey(state.provider.name, key)
             val provider = providers.values.find { it.id == state.provider }
-            val error = provider?.verify(key)
-                ?: AiError.Unknown(state.provider, status = null, detail = "Provider not found")
+            // NOT `provider?.verify(key) ?: <not found>`. `verify` returns null to mean
+            // **success**, so the elvis swallowed every good key and reported it as a missing
+            // provider — the one path onboarding cannot afford to get wrong. The absent
+            // provider and the successful verification are two different answers and have to
+            // be asked as two different questions.
+            val error = if (provider == null) {
+                AiError.Unknown(state.provider, status = null, detail = "Provider not found")
+            } else {
+                provider.verify(key)
+            }
             _uiState.update {
                 it.copy(verifying = false, verified = error == null, error = error)
             }

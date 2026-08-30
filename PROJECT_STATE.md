@@ -562,18 +562,30 @@ moves**.
 
 ## 8. Next step
 
-### ⚠ THE RELEASE BUILD IS PART-WAY PROVEN — 2026-08-30
+### ✓ THE RELEASE BUILD IS PROVEN — 2026-08-30
 
-`:core-domain:test` and `installDebug` are green. `assembleRelease` reached **R8** and failed
-there on missing ErrorProne classes; those rules are now in place but **the build has still never
-completed**, so `isMinifyEnabled = true` remains an untested claim (§10 entry 3). The signing
-keystore now exists on the owner's disk; its two passwords were empty in `keystore.properties`
-and that would have stopped the next attempt after R8.
+`assembleRelease` completed. The APK was signed (v2/v3), installed, and audited on the real
+artifact: 3.6 MB, no API key, no filesystem path, no device id, **no signing password**.
+`isMinifyEnabled = true` is no longer a claim. **That whole category of failure is now exhausted**
+— all four build failures this project has had (KSP running Room, R8, `lintVitalRelease`,
+signing) were "the first time this tool ever ran", and three of them run only on release builds.
 
-**Nothing beyond the build has been exercised on a release APK.** `docs/TESTS_PENDING.md` §٨ is
-the sequence.
+### ⚠ M5.2 IS BUILT AND UNCOMPILED — 2026-08-30
 
-### ⛔ AND M5.1's BEHAVIOUR IS STILL UNTESTED
+The share link, the two copy buttons and `ApiKeySanitizer` landed in one batch and **no compiler
+has seen them.** Structural checks pass (braces, imports, every `R.string` resolved across
+modules under `nonTransitiveRClass`, format specifiers against their call sites, AAPT2
+apostrophes) and an adversarial review fixed 8 defects including 2 compile-breakers — but
+structural checks are not a compiler. First command of the next session:
+
+```
+.\gradlew.bat :core-domain:test 2>&1 | Out-File -Encoding utf8 build-log.txt
+```
+
+**`| Out-File -Encoding utf8`, never `>`.** PowerShell's `>` writes UTF-16 and the log is then
+unreadable to the agent, which costs a round trip every time.
+
+### ⛔ AND M5.1's BEHAVIOUR IS STILL UNTESTED — now with M5.2 stacked behind it
 
 The whole milestone landed on 2026-08-28 in one batch and **not one line of it has executed on a
 device**. `docs/TESTS_PENDING.md` is a complete session's worth of checks, in build order, and it
@@ -581,7 +593,7 @@ is the next thing that happens. Do not begin M6 while it is unrun.
 
 ```
 cd C:\Dev\Braining
-.\gradlew.bat :core-domain:test      ← 82 checks · one minute · no phone
+.\gradlew.bat :core-domain:test      ← 120 checks · one minute · no phone
 .\gradlew.bat installDebug
 ```
 
@@ -635,6 +647,16 @@ lessons were paid for by plans that had quietly been made unnecessary or already
   in `core-ui`, rendered under the error card in chat, Clarify and Settings whenever Developer
   Mode is on. It was opened on 17 August and closed the day it was needed: the owner met «حدث خطأ
   غير متوقّع» from Gemini and there was nothing on any screen that could say why.
+- ~~**Settings gives no feedback that a key was saved.**~~ **Partly closed 2026-08-30** — a
+  pasted key now reports what was *repaired* in it (`KeyFixNotice`), on all five key fields. It
+  still does not say "saved"; that remains open, and is smaller than it was.
+- **`verify()` is the only thing that can say a key works, and three fields do not have it.**
+  Deepgram has no `verify()` at all (below); the sanitizer can prove a key is *well-formed* and
+  nothing more. Do not let the repair notice be read as validation.
+- **`ApiKeySanitizer` is not applied to a key already stored.** It runs on entry. A key saved
+  before 2026-08-30 keeps whatever damage it arrived with until the owner re-pastes it. Cheap to
+  fix at read time in `EncryptedKeyStore`; deferred because it would silently rewrite a stored
+  credential, which §10 entry 45 is precisely about.
 - **The AI-router toggle is unbuilt** (`BRAINING.md` §5). It toggles between an AI classifier and
   a rule table and neither exists; it belongs to M6 with the classifier. Recorded so it is not
   read as a missed M4 item.
@@ -821,6 +843,28 @@ These are the ones that were paid for more than once. The archive has the incide
     buttons whose contents can grow needs either a wrap, a scroll, or a second row decided in
     advance.
 
+46. **`?:` after a call whose `null` means success inverts the result silently.**
+    `provider?.verify(key) ?: AiError.Unknown(… "Provider not found")` — `verify` returns `null`
+    for **a key that works**, so every good key in onboarding was reported as a missing provider.
+    It compiles, it type-checks, and it is exactly backwards. The elvis operator is a test for
+    absence and it cannot tell "nothing to report" from "nothing there"; when `null` is a
+    **result** and not a gap, ask the two questions separately with an `if`. Grep the codebase for
+    `?:` sitting after any call documented to return `null` on success before trusting the next
+    one.
+
+45. **A value the user cannot see is a value nobody can debug — including the provider.**
+    Gemini refused the owner's key for two days behind «حدث خطأ غير متوقّع». The key was correct
+    in every character but one: a `-` had become `—` in a copy-and-paste, and an em dash is two
+    pixels from a hyphen on a phone. **Nothing in the app could see it, and neither could he.**
+    Three lessons, in the order they cost time: the vendor's own sentence was already being
+    captured and rendered to nobody (§9's oldest item — *capture without display is not
+    diagnosis*); the fault was in **input the app accepted without inspecting**, not in the logic
+    everyone was reading; and the class of fault is systematic, not freak — an Arabic-first app
+    invites invisible bidi marks into every pasted field by construction. `ApiKeySanitizer` now
+    checks the input, repairs only what has exactly one possible original, and **says what it
+    changed**. Validate what crosses the boundary; a credential is plain ASCII and that makes the
+    damage provable rather than guessable.
+
 44. **A static analyser's error is a claim about its own analysis, not about the code.** Lint
     failed the release build with "MainActivity must extend android.app.Activity" — about a class
     the platform had already instantiated dozens of times on the owner's phone. **The decisive
@@ -914,6 +958,28 @@ One line each. Full text in `docs/HISTORY_2026-07_to_08.md`.
 > an interval from any date above that line.
 
 ```
+2026-08-30-D  **M5.2 — the batch the Gemini failure paid for.** Three owner requests
+              (2026-08-30): the share button now shares the **GitHub download link**; the request
+              body in Developer Mode gained a copy button per part; **every provider error gained
+              a copy button, outside Developer Mode.** Plus the thing the incident actually
+              demanded: `ApiKeySanitizer` in `:core-domain` — trims, drops interior whitespace,
+              deletes invisibles, replaces look-alikes (7 dashes, curly quotes, Arabic-Indic
+              digits, full-width forms) and **reports what it changed** in `KeyFixNotice`;
+              anything else non-ASCII is flagged and left alone, because guessing at a character
+              inside a credential turns a legible failure into a mysterious one. Wired into all
+              three key entry points. `versionCode 2` / `versionName 1.1.0`. 15 new tests, 120
+              total. Adversarial review found 8 defects including 2 compile-breakers
+              (`state.keyFixes` referenced in a card with no `state`; `R.string.copy_action`
+              resolved against the wrong module's R under `nonTransitiveRClass`) — all fixed
+              before the owner's build. **A pre-existing onboarding bug fell out of the same
+              read**: see §10 entry 46.
+2026-08-30-C  **git exists.** The project had no version control at all through five milestones.
+              `.gitignore` had `/build` where it needed `build/` — the root-anchored form matched
+              nothing while `app/build` alone held 257 MB. First commit `c189b22`, 428 files,
+              audited: no keys, no `keystore.properties`, no `.jks`, no build output. APK audit on
+              the real artifact: 3.6 MB, v2/v3 signed, zero owner data. **The signing key and its
+              passwords stay out of git permanently** — losing the `.jks` means no user can ever
+              upgrade in place.
 2026-08-30-B  release build round 2 — **R8 passed** with the new rules, and the build moved on to
               fail at `lintVitalRelease`: "MainActivity must extend android.app.Activity". A
               false positive about a class Android has instantiated on the owner's phone dozens

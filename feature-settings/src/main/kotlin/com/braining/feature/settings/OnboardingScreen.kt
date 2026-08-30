@@ -34,6 +34,7 @@ import com.braining.core.domain.model.ProviderId
 import com.braining.core.ui.components.PrimaryButton
 import com.braining.core.ui.components.QuietButton
 import com.braining.core.ui.components.TonalButton
+import com.braining.core.ui.error.KeyFixNotice
 import com.braining.core.ui.error.toUserMessage
 
 /**
@@ -138,6 +139,12 @@ fun OnboardingScreen(
                             imeAction = ImeAction.Done,
                         ),
                     )
+
+                    // **The most valuable four lines on this screen.** A newcomer whose paste
+                    // inserted an em dash would otherwise meet «حدث خطأ غير متوقّع» on their
+                    // first attempt at the app and never come back — which is what happened to
+                    // the owner on 2026-08-30, and he had Developer Mode and two days.
+                    KeyFixNotice(state.keyFixes)
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),

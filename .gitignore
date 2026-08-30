@@ -40,3 +40,6 @@ keystore.properties*
 
 # Build logs written by hand for diagnosis.
 build-log*.txt
+
+# Scratch produced by a review pass. Not part of the project.
+.m52-review.diff

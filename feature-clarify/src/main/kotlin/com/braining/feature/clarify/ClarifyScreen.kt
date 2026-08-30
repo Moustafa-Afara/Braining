@@ -280,9 +280,8 @@ fun ClarifyScreen(
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             style = MaterialTheme.typography.bodySmall,
                         )
-                        // §9's item, closed 2026-08-28: what the provider actually said, when
-                        // the classifier could not place it. Developer Mode only, and silent
-                        // when there is nothing to add.
+                        // Copy button always; the provider's own English sentence underneath
+                        // it only in Developer Mode. Silent when there is no error at all.
                         ProviderErrorDetail(uiState.error, uiState.developerMode)
 
                         // ── who else could answer this ───────────────────────────────────

@@ -1,5 +1,6 @@
 package com.braining.feature.settings
 
+import com.braining.core.ui.error.KeyFixNotice
 import com.braining.core.ui.error.ProviderErrorDetail
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.appcompat.app.AppCompatDelegate
+import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
@@ -59,6 +61,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.braining.core.domain.model.ProviderId
 import com.braining.core.domain.model.ProviderState
 import com.braining.core.domain.store.AppPreferences
+import com.braining.core.domain.text.ApiKeySanitizer
+import com.braining.core.ui.components.CopyIconButton
 import com.braining.core.ui.components.PrimaryButton
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -151,6 +155,7 @@ fun SettingsScreen(
 
             SpeechKeyCard(
                 apiKey = uiState.deepgramKey,
+                keyFixes = uiState.deepgramKeyFixes,
                 onKeyChange = viewModel::updateDeepgramKey,
             )
 
@@ -171,6 +176,10 @@ fun SettingsScreen(
                 enabled = uiState.ttsEnabled,
                 onToggle = viewModel::setTtsEnabled,
             )
+
+            // M5.2. Placed with the other "what this app is" cards rather than at the foot: the
+            // owner shares it, and a control he uses is not a footnote.
+            ShareCard(version = rememberAppVersion())
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -405,6 +414,11 @@ private fun FontLicenceCard() {
 @Composable
 private fun SpeechKeyCard(
     apiKey: String,
+    /**
+     * What [ApiKeySanitizer] changed in the pasted key. Passed in, like everything else here:
+     * the card owns no state, and the repairs belong to the same update that produced the key.
+     */
+    keyFixes: List<ApiKeySanitizer.Fix>,
     onKeyChange: (String) -> Unit,
 ) {
     var keyVisible by remember { mutableStateOf(false) }
@@ -444,6 +458,10 @@ private fun SpeechKeyCard(
                 visualTransformation = if (keyVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             )
+
+            // What the paste brought with it. Silent when the key was clean — which it usually
+            // is, and which is why the notice can afford to be wordy when it is not.
+            KeyFixNotice(keyFixes)
 
             // The one piece of feedback this card can honestly give today: the key is stored.
             // §9 has "Settings gives no feedback that a key was saved" open against the
@@ -625,6 +643,11 @@ private fun ProviderCard(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             )
 
+            // The em-dash notice. Directly under the field it is about, so that "the dash in
+            // your key was wrong" arrives while the user is still looking at the key — not
+            // after a verify has failed for a reason they will guess wrong.
+            KeyFixNotice(state.keyFixes)
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -652,9 +675,10 @@ private fun ProviderCard(
                     color = MaterialTheme.colorScheme.error,
                 )
                 // **This is the card the owner was standing in front of** when Gemini refused
-                // his key with «حدث خطأ غير متوقّع». Developer Mode now prints the vendor's own
-                // sentence underneath it, which is the only thing that separates a wrong model
-                // name from an unentitled key from an exhausted quota.
+                // his key with «حدث خطأ غير متوقّع». The copy button is always here; in
+                // Developer Mode the vendor's own sentence prints above it, which is the only
+                // thing that separates a wrong model name from an unentitled key from an
+                // exhausted quota.
                 ProviderErrorDetail(it, developerMode)
             }
         }
@@ -740,5 +764,119 @@ private fun ReadbackCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+/**
+ * Share the app — **a link, not the file.**
+ *
+ * The owner's ruling of 2026-08-30. The alternative was sending the APK itself through the share
+ * sheet, which needs no hosting at all; he chose the link, and the reason is the one that matters
+ * for distribution: **a file is frozen at the moment it is sent.** Every friend who received a
+ * copy that way would hold whatever build was current that day, with no way to learn a newer one
+ * exists and no way for him to reach them. A GitHub "latest release" URL points at whatever is
+ * newest, forever, so one message sent once keeps working after every build.
+ *
+ * ## The button is hidden until the link is real
+ *
+ * [DOWNLOAD_URL_PLACEHOLDER] is what ships before the repository exists. While the string still
+ * matches it, this card shows the setup instruction instead of a button.
+ *
+ * That is deliberate and it is the same rule that removed the GitHub Models stub (`ANSWERS.md`
+ * Part 8 §D1): **a control that cannot work is worse than a missing one**, because pressing it
+ * teaches the user that the app's buttons cannot be trusted. A share button that sends friends a
+ * dead link would do that damage to several people at once.
+ *
+ * The version is shown here rather than buried: it is the first thing to ask when someone reports
+ * a fault, and it is the thing they can never find.
+ */
+@Composable
+private fun ShareCard(version: String) {
+    val context = LocalContext.current
+    val url = stringResource(R.string.share_download_url)
+    val ready = url.isNotBlank() && !url.contains(DOWNLOAD_URL_PLACEHOLDER)
+    val message = stringResource(R.string.share_message, url)
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_share_title),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                text = stringResource(R.string.settings_share_subtitle),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.settings_version, version),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            if (ready) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TonalButton(
+                        onClick = {
+                            // Wrapped: a device with no app that accepts text would otherwise
+                            // crash the whole app to save the user a share. Failing to open a
+                            // chooser must cost nothing.
+                            runCatching {
+                                val send = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, message)
+                                }
+                                context.startActivity(
+                                    Intent.createChooser(send, null)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                                )
+                            }
+                        },
+                    ) {
+                        Text(stringResource(R.string.settings_share_action))
+                    }
+                    // For someone who wants to paste it somewhere the share sheet cannot reach.
+                    CopyIconButton(
+                        text = message,
+                        // Qualified: with android.nonTransitiveRClass=true this module's R
+                        // holds only this module's strings, and copy_action is core-ui's.
+                        contentDescription = stringResource(com.braining.core.ui.R.string.copy_action),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.settings_share_not_ready),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+    }
+}
+
+/** The value `share_download_url` ships with. See [ShareCard]. */
+private const val DOWNLOAD_URL_PLACEHOLDER = "USER/REPO"
+
+/**
+ * The app's own version, read from the package manager.
+ *
+ * **Not `BuildConfig`**: this is a library module, so its `BuildConfig` describes `:feature-
+ * settings` and not the app the user installed. The package manager always answers about the
+ * real, installed APK — which is the only version anyone can report a fault against.
+ */
+@Composable
+private fun rememberAppVersion(): String {
+    val context = LocalContext.current
+    return remember(context) {
+        runCatching {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        }.getOrNull().orEmpty()
     }
 }

@@ -1,5 +1,8 @@
 package com.braining.core.ui.error
 
+import com.braining.core.ui.components.CopyIconButton
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -95,31 +98,36 @@ fun AiError.toUserMessage(): String = when (this) {
 }
 
 /**
- * The provider's own words about a failure — **Developer Mode only.**
+ * What to do with a failure: **copy it**, and — in Developer Mode — read what the provider
+ * actually said.
  *
- * ### The §9 item this closes, open since 2026-08-17
+ * ## The §9 item this closed, and the incident that proved it
  *
- * `BaseHttpProvider` captures the provider's raw message, redacts any key out of it, and hands
- * it up as `AiError.Unknown.detail`. Until now **nothing rendered it.** The entry in
- * `PROJECT_STATE.md` §9 reads: "the provider's own sentence is captured and redacted and then
- * shown to nobody, so an unclassified failure is still a status code and a shrug."
+ * `BaseHttpProvider` captures the provider's raw message, redacts any key out of it, and hands it
+ * up as `AiError.Unknown.detail`. Until 2026-08-28 **nothing rendered it**, and §9 carried the
+ * entry: "shown to nobody, so an unclassified failure is still a status code and a shrug."
  *
- * The owner met that shrug on 2026-08-28: Gemini refused his key and the app said «حدث خطأ غير
- * متوقّع». Three different causes produce that sentence and none of them can be told apart from
- * it — which is `PROJECT_STATE.md` §10 entry 1 exactly: a code names the symptom the platform
- * saw, not the cause.
+ * Two days later that shrug had a name. Gemini refused the owner's key, the app said «حدث خطأ غير
+ * متوقّع», and three causes were indistinguishable — until this line printed Google's own words:
+ * `Unexpected char 0x2014 at 37 in x-goog-api-key value`. **An em dash inside the key.** Not the
+ * model, not the quota, not the region. One character, invisible on a phone, and unfindable
+ * without the provider's sentence. `ApiKeySanitizer` now prevents it; this is what diagnosed it.
  *
- * ### Why it is gated on Developer Mode
+ * ## Why the copy button is not behind Developer Mode
  *
- * The text is English, unstructured, and written by a vendor for their own engineers. Showing it
- * to an ordinary user replaces one unhelpful sentence with two. `AiError` exists precisely so
- * that the normal path stays in Arabic and stays typed; this is the escape hatch for the case
- * the typing could not cover, and it belongs where every other capture already lives.
+ * The owner asked for it on 2026-08-30, and the reason is the whole distribution plan: a friend
+ * who hits an error cannot read a stack trace, cannot enable Developer Mode, and cannot retype an
+ * English sentence into a message accurately. **They can press copy and paste it.** The button
+ * copies the Arabic sentence *and* the provider's raw text, so one paste carries everything
+ * needed to diagnose it.
+ *
+ * The **raw detail** stays behind Developer Mode: it is English, unstructured, and written by a
+ * vendor for their own engineers. `AiError` exists so the normal path stays typed and in Arabic.
  *
  * **Already redacted at the provider.** It must never be given raw request data — hard constraint
  * 3 makes a leaked key a release blocker, not a preference.
  *
- * Renders nothing at all when there is no detail, so a caller can place it unconditionally.
+ * Renders nothing at all when there is no error, so a caller can place it unconditionally.
  */
 @Composable
 fun ProviderErrorDetail(
@@ -127,24 +135,42 @@ fun ProviderErrorDetail(
     developerMode: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    if (!developerMode) return
+    if (error == null) return
+    val message = error.toUserMessage()
     val detail = (error as? AiError.Unknown)?.detail?.trim()
-    if (detail.isNullOrEmpty()) return
 
-    Column(modifier = modifier.padding(top = 6.dp)) {
-        BidiText(
-            text = stringResource(R.string.dev_provider_said),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        // Forced LTR and monospace, like every other capture: this is a vendor's English
-        // sentence, often carrying a JSON fragment, and letting content detection flip it would
-        // scramble the one line the reader came for.
-        BidiText(
-            text = detail,
-            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            forced = BidiDirection.Ltr,
-        )
+    Column(modifier = modifier.padding(top = 4.dp)) {
+        if (developerMode && !detail.isNullOrEmpty()) {
+            BidiText(
+                text = stringResource(R.string.dev_provider_said),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            // Forced LTR and monospace, like every other capture: this is a vendor's English
+            // sentence, often carrying a JSON fragment, and letting content detection flip it
+            // would scramble the one line the reader came for.
+            BidiText(
+                text = detail,
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                forced = BidiDirection.Ltr,
+            )
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // One paste carries everything: the Arabic sentence the user can read, and the
+            // provider's own words that actually identify the fault. Splitting them into two
+            // buttons would guarantee that only one of them ever gets sent.
+            CopyIconButton(
+                text = if (detail.isNullOrEmpty()) message else "$message\n\n$detail",
+                contentDescription = stringResource(R.string.copy_error),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            BidiText(
+                text = stringResource(R.string.copy_error),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }

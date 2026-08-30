@@ -59,4 +59,11 @@
 
     <string name="dev_provider_said">What the provider actually said</string>
     <string name="dev_part_empty">(empty — this part was sent with no text)</string>
+
+    <string name="key_fix_repaired_sample">Fixed %1$d character(s) in the key — the first was «%2$s» and has been replaced. This happens when a key is copied from somewhere that substitutes symbols.</string>
+    <string name="key_fix_repaired_invisible">Removed %1$d invisible character(s) from the key (unseen, but they break it).</string>
+    <string name="key_fix_suspicious">⚠ The key has %1$d unexpected character(s), the first at position %2$d — left alone, because there is no right replacement to guess. Copy the key again, straight from the provider\'s site.</string>
+    <string name="copy_action">Copy</string>
+    <string name="copy_error">Copy the error message</string>
+    <string name="copy_part">Copy this part</string>
 </resources>

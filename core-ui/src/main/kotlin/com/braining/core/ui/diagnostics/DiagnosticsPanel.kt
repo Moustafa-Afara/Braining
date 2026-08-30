@@ -18,7 +18,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
 import com.braining.core.domain.diagnostics.PromptPreview
+import com.braining.core.ui.components.CopyIconButton
 import com.braining.core.domain.model.RequestDiagnostics
 import com.braining.core.ui.R
 import com.braining.core.ui.text.BidiDirection
@@ -198,11 +201,22 @@ private fun PromptSection(section: PromptPreview.Section) {
         PromptPreview.Kind.RAW -> R.string.dev_part_raw
     }
     Spacer(modifier = Modifier.height(6.dp))
-    BidiText(
-        text = stringResource(label),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+    // Label and copy on one line. The owner asked for this on 2026-08-30: the part he wants out
+    // of the app is almost always **one** section — the system prompt — and selecting several
+    // thousand characters of it by hand on a phone is not something anyone does twice.
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        BidiText(
+            text = stringResource(label),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        CopyIconButton(
+            text = section.text,
+            contentDescription = stringResource(R.string.copy_part),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
     // An empty part is shown as empty rather than skipped — see `PromptPreview.of`. A turn that
     // silently disappeared from this panel would be the panel lying about the request.
     if (section.text.isBlank()) {
@@ -232,11 +246,20 @@ private fun PromptSection(section: PromptPreview.Section) {
 @Composable
 private fun DiagnosticsField(label: String, value: String) {
     Spacer(modifier = Modifier.height(8.dp))
-    BidiText(
-        text = label,
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.primary,
-    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        BidiText(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(1f),
+        )
+        // The raw body too: it is the one a bug report should carry, because it is the bytes.
+        CopyIconButton(
+            text = value,
+            contentDescription = stringResource(R.string.copy_action),
+            tint = MaterialTheme.colorScheme.primary,
+        )
+    }
     // Forced LTR: a URL and a JSON body read left-to-right no matter how much Arabic the payload
     // happens to contain. Letting content detection decide would flip the whole blob the moment
     // the Arabic prompt outweighed the JSON syntax around it — and with CLARIFY that is no

@@ -71,4 +71,22 @@
     <!-- M5.1 · the way back. Choosing a language used to be permanent and unreversible. -->
     <string name="settings_language_system">لغة الجهاز</string>
     <string name="settings_language_system_hint">التطبيق يتبع لغة هاتفك ما لم تختر غير ذلك.</string>
+
+    <!--
+        M5.2 · مشاركة التطبيق برابط GitHub.
+
+        ⚠ الرابط أدناه **قالب**. بعد إنشاء مستودعك على GitHub، بدّل USER/REPO باسم حسابك واسم
+        المستودع. حتى تفعل ذلك، لا يظهر زرّ المشاركة إطلاقاً — لأن زرّاً يرسل رابطاً معطّلاً
+        إلى عشرة أصدقاء أسوأ من زرّ غائب.
+
+        شكل الرابط الذي ينزّل الملفّ مباشرةً:
+          https://github.com/USER/REPO/releases/latest/download/app-release.apk
+    -->
+    <string name="share_download_url">https://github.com/USER/REPO/releases/latest/download/app-release.apk</string>
+    <string name="share_message">جرّب «فهم» — تطبيق يحوّل فكرتك المنطوقة بالعربية إلى نتيجة، بعد أن يستجوبك فيها حتى تنضج.\n\nنزّله من هنا:\n%1$s\n\n(ستحتاج مفتاحاً واحداً مجانياً — التطبيق يشرح لك كيف عند أوّل فتح.)</string>
+    <string name="settings_share_title">شارك التطبيق</string>
+    <string name="settings_share_subtitle">أرسل رابط التنزيل لمن تشاء. الرابط يشير دائماً إلى أحدث نسخة، فلا يتعطّل مع الوقت.</string>
+    <string name="settings_share_action">شارك الرابط</string>
+    <string name="settings_share_not_ready">لم يُضبط رابط التنزيل بعد. بدّل USER/REPO في share_download_url باسم مستودعك على GitHub، ثم أعد البناء.</string>
+    <string name="settings_version">النسخة %1$s</string>
 </resources>

@@ -11,6 +11,7 @@ import com.braining.core.domain.model.ProviderState
 import com.braining.core.domain.provider.AiProvider
 import com.braining.core.domain.store.AppPreferences
 import com.braining.core.domain.store.EncryptedKeyStore
+import com.braining.core.domain.text.ApiKeySanitizer
 import com.braining.core.domain.text.StorageSize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +35,16 @@ data class SettingsUiState(
      * id, so `"DEEPGRAM"` needs no interface change.
      */
     val deepgramKey: String = "",
+
+    /**
+     * What was repaired in the Deepgram key on its way into the field above.
+     *
+     * The provider cards carry theirs on [ProviderState]; this key has no `ProviderState`
+     * (see the note on [deepgramKey]), so it carries its own. Dropping them would have made
+     * this the one key field on the screen that repairs silently — and a transcription key is
+     * pasted from exactly the same places as the rest.
+     */
+    val deepgramKeyFixes: List<ApiKeySanitizer.Fix> = emptyList(),
 
     /**
      * The "about me" note. Read by CLARIFY and FORGE only — `ANSWERS.md` Part 8 §D3.
@@ -169,9 +180,14 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun updateApiKey(providerId: ProviderId, key: String) {
-        // Pasted keys routinely carry a trailing newline or space; an untrimmed key
-        // produces an auth header that fails with a confusing 401.
-        val cleaned = key.trim()
+        // **Repaired, not merely trimmed** — and this replaced a bare `trim()` on 2026-08-30.
+        //
+        // A trailing newline was the only damage this used to handle. The owner's Google key was
+        // rejected for an **em dash** at character 37, put there by whatever copied it: invisible
+        // as a defect, fatal as a credential, and impossible to see on a phone. `ApiKeySanitizer`
+        // repairs what has exactly one right answer and reports the rest.
+        val result = ApiKeySanitizer.sanitize(key)
+        val cleaned = result.key
 
         // Update the field first and synchronously, so the text the user typed is what
         // the text field shows. The store write follows in the background.
@@ -185,6 +201,7 @@ class SettingsViewModel @Inject constructor(
                         isEnabled = cleaned.isNotBlank(),
                         isValid = null,
                         error = null,
+                        keyFixes = result.fixes,
                     ))
                 }
             )
@@ -205,8 +222,11 @@ class SettingsViewModel @Inject constructor(
      * one produces an auth failure that reads like a wrong key.
      */
     fun updateDeepgramKey(key: String) {
-        val cleaned = key.trim()
-        _uiState.update { it.copy(deepgramKey = cleaned) }
+        // The same repair. A transcription key is pasted the same way and breaks the same way
+        // — so it also gets the same sentence about what changed.
+        val result = ApiKeySanitizer.sanitize(key)
+        val cleaned = result.key
+        _uiState.update { it.copy(deepgramKey = cleaned, deepgramKeyFixes = result.fixes) }
         viewModelScope.launch {
             if (cleaned.isBlank()) keyStore.deleteKey(DEEPGRAM_KEY_ID)
             else keyStore.saveKey(DEEPGRAM_KEY_ID, cleaned)

@@ -232,9 +232,9 @@ fun ChatScreen(
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             style = MaterialTheme.typography.bodySmall,
                         )
-                        // The provider's own sentence, when the classifier could not place
-                        // the failure. Renders nothing unless Developer Mode is on and the error
-                        // is an `Unknown` carrying a detail — §9's item, closed 2026-08-28.
+                        // A copy button, always — the owner's ruling of 2026-08-30: a friend
+                        // who hits an error cannot retype an English sentence, but can paste one.
+                        // The provider's own raw words stay behind Developer Mode.
                         ProviderErrorDetail(error, uiState.developerMode)
                         // A failed request discards its assistant bubble, so its
                         // diagnostics are surfaced here instead — a failure is precisely

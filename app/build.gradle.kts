@@ -17,6 +17,25 @@ android {
 
     defaultConfig {
         applicationId = "com.braining.app"
+
+        // ─────────────────────────────────────────────────────────────────────────────────
+        // **RAISE BOTH BEFORE EVERY BUILD YOU SHARE.** This is the only place they are written.
+        //
+        // `versionCode` is the number **Android** compares: an update whose code is not higher
+        // than the installed one is refused, silently, as "already installed". `versionName` is
+        // the number a **person** reads — it appears in Settings so that a friend reporting a
+        // fault can say which build they have.
+        //
+        // They were left at 1 / "1.0.0" in the convention plugin until 2026-08-30, which meant
+        // every release the owner produced claimed to be the same one. That is harmless while
+        // nothing is distributed and unrecoverable once it is: two friends on two different
+        // builds, both reporting "1.0.0", and no update able to reach either.
+        //
+        // 2 / "1.1.0" — the M5.1 batch plus sharing. Version 1 / "1.0.0" was the first signed
+        // APK, built 2026-08-30.
+        // ─────────────────────────────────────────────────────────────────────────────────
+        versionCode = 2
+        versionName = "1.1.0"
     }
 
     signingConfigs {

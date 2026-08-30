@@ -109,4 +109,15 @@
     <!-- M5.1 · closes the §9 item open since 2026-08-17: the provider's own sentence. -->
     <string name="dev_provider_said">ما قاله المزوّد حرفياً</string>
     <string name="dev_part_empty">(فارغ — أُرسل هذا الجزء بلا نصّ)</string>
+
+    <!--
+        M5.2 · إصلاح المفاتيح المكسورة بالنسخ واللصق. سببها حادثة ٣٠ آب: شرطة طويلة (—) داخل
+        مفتاح Google أنتجت «حدث خطأ غير متوقّع» وكلّفت يومين.
+    -->
+    <string name="key_fix_repaired_sample">أصلحتُ %1$d محرفاً في المفتاح — كان أوّلها «%2$s» ووضعتُ مكانه الصحيح. هذا يحدث حين يُنسخ المفتاح من مكان يبدّل الرموز.</string>
+    <string name="key_fix_repaired_invisible">أزلتُ %1$d محرفاً خفيّاً من المفتاح (لا يُرى لكنه يُفسده).</string>
+    <string name="key_fix_suspicious">⚠ في المفتاح %1$d محرفاً غريباً، أوّله في الموضع %2$d — لم أغيّره لأنني لا أعرف بديله الصحيح. انسخ المفتاح من جديد من موقع المزوّد مباشرةً.</string>
+    <string name="copy_action">نسخ</string>
+    <string name="copy_error">نسخ رسالة الخطأ</string>
+    <string name="copy_part">نسخ هذا الجزء</string>
 </resources>
