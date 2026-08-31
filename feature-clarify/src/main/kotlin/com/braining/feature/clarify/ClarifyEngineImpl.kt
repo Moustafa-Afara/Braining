@@ -69,22 +69,6 @@ class ClarifyEngineImpl @Inject constructor(
     }
 
     /**
-     * Re-ask the current turn. See [ClarifyEngine.resume].
-     *
-     * `session.copy(state = …)` and **not** `session = ClarifySession(...)`: every turn already
-     * recorded stays exactly where it was, and only the state moves back to ANALYZING so the
-     * screen shows a request in flight again.
-     */
-    override fun resume(
-        provider: AiProvider,
-        model: String,
-        diagnostics: Boolean,
-    ): Flow<ClarifyEvent> {
-        session = session.copy(state = ClarifyState.ANALYZING)
-        return runTurn(provider, model, diagnostics)
-    }
-
-    /**
      * The user declared the idea mature.
      *
      * No network, no provider, no failure path. `BRAINING.md` §2.3 makes this the user's alone,

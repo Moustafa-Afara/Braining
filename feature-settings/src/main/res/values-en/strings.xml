@@ -11,7 +11,7 @@
     <string name="settings_speech_subtitle">Optional key for more accurate Arabic transcription. Without it the app uses the device engine.</string>
     <string name="settings_speech_saved">Key saved and encrypted on your device.</string>
     <string name="settings_licences_title">Licences</string>
-    <string name="settings_font_attribution">IBM Plex Sans Arabic — Copyright © 2017 IBM Corp. with Reserved Font Name \"Plex\". Licensed under the SIL Open Font License, Version 1.1.</string>
+    <string name="settings_font_attribution">IBM Plex Sans Arabic — Copyright © 2017 IBM Corp. with Reserved Font Name "Plex". Licensed under the SIL Open Font License, Version 1.1.</string>
     <string name="settings_licence_show">Show licence text</string>
     <string name="settings_licence_hide">Hide licence text</string>
     <string name="settings_action_verify">Verify</string>
@@ -53,35 +53,18 @@
     <string name="onboarding_where_anthropic">Claude — from the Anthropic console, API Keys. Paid.</string>
     <string name="onboarding_where_openai">ChatGPT — from the OpenAI dashboard, API keys. Paid.</string>
     <string name="onboarding_where_deepseek">DeepSeek — from the DeepSeek platform, API keys. Paid, and inexpensive.</string>
-    <string name="onboarding_gemini_region">Note: Gemini refuses requests from some countries with a \"location is not supported\" message. If that happens, pick another provider above — the app works with any of them.</string>
+    <string name="onboarding_gemini_region">Note: Gemini refuses requests from some countries with a "location is not supported" message. If that happens, pick another provider above — the app works with any of them.</string>
     <string name="onboarding_privacy">Your audio is never saved. Your sessions are stored on this device only, and you can delete them any time from Settings.</string>
     <string name="onboarding_start">Start</string>
     <string name="onboarding_skip">Skip for now</string>
     <string name="settings_language_system">Device language</string>
     <string name="settings_language_system_hint">The app follows your phone\'s language unless you choose otherwise.</string>
 
-    <string name="share_download_url">https://github.com/Moustafa-Afara/Braining/releases/latest/download/app-release.apk</string>
+    <string name="share_download_url">https://github.com/USER/REPO/releases/latest/download/app-release.apk</string>
     <string name="share_message">Try Braining — it turns an idea you speak in Arabic into a result, after interrogating it with you until it is mature.\n\nDownload it here:\n%1$s\n\n(You will need one free API key — the app explains how on first launch.)</string>
     <string name="settings_share_title">Share the app</string>
     <string name="settings_share_subtitle">Send the download link to anyone. It always points at the newest version, so it does not go stale.</string>
     <string name="settings_share_action">Share the link</string>
-    <string name="settings_share_not_ready">The download link is not valid. It must end in app-release.apk — check share_download_url, then rebuild.</string>
+    <string name="settings_share_not_ready">The download link is not set yet. Replace USER/REPO in share_download_url with your GitHub repository, then rebuild.</string>
     <string name="settings_version">Version %1$s</string>
-    <!-- M5.3 · the per-provider key guide. No prices, no quota figures: those go stale inside a
-         shipped APK, and a stale figure about money is worse than no figure. -->
-    <string name="key_guide_open">How do I get this key?</string>
-    <string name="key_guide_close">Hide</string>
-    <string name="key_guide_button">Open the keys page</string>
-    <string name="key_guide_docs">Read the terms</string>
-    <string name="key_guide_prefix">The key usually starts with %1$s</string>
-    <string name="key_guide_free">A free account is enough — no credit card.</string>
-    <string name="key_guide_paid">Paid: you need a payment method on the account before the first request.</string>
-    <string name="key_guide_region">⚠ Not available in every country. If it refuses you because of your location, your key is not the problem — tap \"Read the terms\" for the list.</string>
-
-    <string name="key_guide_gemini">Create a Google account, open Google AI Studio and press \"Create API key\". No credit card needed.</string>
-    <string name="key_guide_anthropic">Create an account in the Claude Console at platform.claude.com, add a payment method, then press \"Create Key\" under API keys.</string>
-    <string name="key_guide_openai">Create an account on the OpenAI platform, add a payment method or credit, then press \"Create new secret key\" on the API keys page.</string>
-    <string name="key_guide_deepseek">Create an account on the DeepSeek platform, top up a balance, then press \"Create API key\" under API keys.</string>
-
-    <string name="key_guide_copy_once">Copy the key the moment it appears — all four sites show it once and never again.</string>
 </resources>

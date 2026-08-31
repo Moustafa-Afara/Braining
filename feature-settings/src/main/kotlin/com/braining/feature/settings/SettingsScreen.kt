@@ -648,12 +648,6 @@ private fun ProviderCard(
             // after a verify has failed for a reason they will guess wrong.
             KeyFixNotice(state.keyFixes)
 
-            // **The owner's request of 2026-08-31**, and the answer to the four questions every
-            // friend asks him by hand: where the key lives, what the account needs first, what
-            // the key looks like, and — for Gemini — whether their country is allowed at all.
-            // Collapsed: it is read once, and four open panels would bury the settings.
-            ProviderKeyGuide(state.providerId)
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -785,15 +779,8 @@ private fun ReadbackCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
  *
  * ## The button is hidden until the link is real
  *
- * The card checks the **shape** of `share_download_url`, not merely that it was edited: an
- * `https://github.com/…` URL ending in [APK_ASSET_NAME]. Anything else shows the setup
- * instruction instead of a button.
- *
- * The shape check exists because the weaker one failed. On 2026-08-30 the owner replaced the
- * whole string with his repository's *clone* URL — `…/Braining.git`, which is what GitHub offers
- * you on the repository page — and a "did you remove the placeholder?" test passed it happily.
- * **A guard that only detects the untouched default does not protect against the mistake people
- * actually make**, which is editing it wrongly rather than forgetting to edit it.
+ * [DOWNLOAD_URL_PLACEHOLDER] is what ships before the repository exists. While the string still
+ * matches it, this card shows the setup instruction instead of a button.
  *
  * That is deliberate and it is the same rule that removed the GitHub Models stub (`ANSWERS.md`
  * Part 8 §D1): **a control that cannot work is worse than a missing one**, because pressing it
@@ -807,12 +794,7 @@ private fun ReadbackCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
 private fun ShareCard(version: String) {
     val context = LocalContext.current
     val url = stringResource(R.string.share_download_url)
-    // **Not just "the placeholder is gone".** On 2026-08-30 the owner replaced the whole
-    // string with his repository's *clone* URL — `…/Braining.git` — which passes a
-    // placeholder check and downloads nothing. A shipped download link has exactly one
-    // shape, so the guard checks the shape: an https GitHub URL ending in the asset's
-    // filename. A wrong link that reaches a friend is not recoverable by the friend.
-    val ready = url.startsWith("https://github.com/") && url.endsWith("/$APK_ASSET_NAME")
+    val ready = url.isNotBlank() && !url.contains(DOWNLOAD_URL_PLACEHOLDER)
     val message = stringResource(R.string.share_message, url)
 
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -879,13 +861,8 @@ private fun ShareCard(version: String) {
     }
 }
 
-/**
- * The filename `assembleRelease` produces, and the one `releases/latest/download/` looks up.
- *
- * Renaming the asset on the release page breaks the share button silently — the URL stays
- * well-formed and returns a 404 — so the app checks the link ends with this exact name.
- */
-private const val APK_ASSET_NAME = "app-release.apk"
+/** The value `share_download_url` ships with. See [ShareCard]. */
+private const val DOWNLOAD_URL_PLACEHOLDER = "USER/REPO"
 
 /**
  * The app's own version, read from the package manager.

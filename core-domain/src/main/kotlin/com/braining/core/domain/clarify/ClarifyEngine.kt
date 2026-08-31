@@ -50,26 +50,6 @@ interface ClarifyEngine {
     ): Flow<ClarifyEvent>
 
     /**
-     * Ask the current turn **again** — after it failed — without touching the session.
-     *
-     * The distinction from [reply] is the whole reason this exists: `reply` appends the user's
-     * answer to the session *before* it returns the flow, so re-calling it after a network
-     * failure would file the same answer twice. And [open] is worse: it **discards the session**
-     * and restarts the interrogation from the original idea.
-     *
-     * Added 2026-08-30, when the fallback chooser reached this screen. A "try another provider"
-     * button that silently threw away twelve turns of interrogation would be the most expensive
-     * button in the app.
-     *
-     * @param provider may differ from the one that failed — that is the point.
-     */
-    fun resume(
-        provider: AiProvider,
-        model: String,
-        diagnostics: Boolean = false,
-    ): Flow<ClarifyEvent>
-
-    /**
      * The user declares the idea mature. Moves to [ClarifyState.READY] and stops asking.
      *
      * Deliberately not a network call: this is a state transition the user owns, and making it
