@@ -7,6 +7,7 @@ import com.braining.core.domain.routing.ModelRouter
 import com.braining.ai.providers.anthropic.AnthropicProvider
 import com.braining.ai.providers.deepseek.DeepSeekProvider
 import com.braining.ai.providers.gemini.GeminiProvider
+import com.braining.ai.providers.ollama.OllamaProvider
 import com.braining.ai.providers.openai.OpenAiProvider
 import dagger.Module
 import dagger.Provides
@@ -39,6 +40,23 @@ object ProvidersModule {
     @IntoMap
     @StringKey("GEMINI")
     fun provideGemini(impl: GeminiProvider): AiProvider = impl
+
+    /**
+     * The user's own machine.
+     *
+     * Bound the same way as the four remote providers, so every screen that iterates the map gets
+     * it for free — the provider menu, the fallback chooser, Settings. Its differences (no key,
+     * an address from preferences, a PC that can be asleep) live inside the class, not in the
+     * graph, which is what keeps the callers from having to know about them.
+     *
+     * **Also bound by its concrete type**, below: the Settings screen needs `OllamaProvider.probe`
+     * to test the connection, and `AiProvider` has no such method — nor should it, since no other
+     * provider can be *asleep*.
+     */
+    @Provides
+    @IntoMap
+    @StringKey("OLLAMA")
+    fun provideOllama(impl: OllamaProvider): AiProvider = impl
 
     /**
      * The router — **bound here, implemented in `:core-domain`.**

@@ -126,6 +126,12 @@ fun OnboardingScreen(
                         )
                     }
 
+                    // The same component Settings shows, on purpose. §10 entry 47: a capability
+                    // that lives on one screen is a capability on one screen — and onboarding is
+                    // where a friend meets this question *first*, before they have any idea that
+                    // Settings exists.
+                    ProviderKeyGuide(state.provider)
+
                     OutlinedTextField(
                         value = state.key,
                         onValueChange = viewModel::updateKey,
@@ -220,4 +226,5 @@ private fun whereToGetKey(provider: ProviderId): Int = when (provider) {
     ProviderId.ANTHROPIC -> R.string.onboarding_where_anthropic
     ProviderId.OPENAI -> R.string.onboarding_where_openai
     ProviderId.DEEPSEEK -> R.string.onboarding_where_deepseek
+    ProviderId.OLLAMA -> R.string.onboarding_where_ollama
 }

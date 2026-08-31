@@ -110,6 +110,22 @@ interface AppPreferences {
 
     suspend fun setOnboardingDismissed(dismissed: Boolean)
 
+    /**
+     * The address of the user's own machine running Ollama, **exactly as they typed it.**
+     *
+     * Stored raw and validated on read by `LocalEndpoint`, not the other way round. Normalising
+     * on save would mean the field silently rewrote what someone was still typing — the same
+     * trap `setUserProfile` documents, and the reason `updateModel` does not trim either.
+     *
+     * Empty means not configured, which is the normal state for everybody except the owner.
+     * **Never a key**, so it lives here in plain preferences rather than in the encrypted key
+     * store: an IP address on a home network is not a secret, and putting it behind the Keystore
+     * would imply it was one.
+     */
+    val ollamaUrl: Flow<String>
+
+    suspend fun setOllamaUrl(url: String)
+
     companion object {
         /**
          * The cap on the note, in characters. Here rather than in the store or the screen

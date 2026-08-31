@@ -66,4 +66,6 @@
     <string name="copy_action">Copy</string>
     <string name="copy_error">Copy the error message</string>
     <string name="copy_part">Copy this part</string>
+    <!-- Ollama has no key to be missing; its address has not been set. -->
+    <string name="error_ollama_no_address">Set your computer\'s address in Settings first — Ollama needs no key.</string>
 </resources>

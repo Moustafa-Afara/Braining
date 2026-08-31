@@ -35,6 +35,28 @@ abstract class BaseHttpProvider(
 ) : AiProvider {
 
     protected abstract val baseUrl: String
+
+    /**
+     * Where the request actually goes, resolved **per request**.
+     *
+     * Four of the five providers are reached at a constant compiled into the APK, and for them
+     * this is [baseUrl] and nothing more. Ollama is the exception that made the hook necessary:
+     * its address is the user's own PC, typed in Settings, and it can change between two
+     * messages in the same conversation. Returning null means "not configured" — the caller
+     * then reports it rather than sending a request to an empty string.
+     */
+    protected open suspend fun resolveBaseUrl(): String? = baseUrl
+
+    /**
+     * False for a provider that authenticates nobody.
+     *
+     * Ollama on a home network has no keys and no accounts; demanding one would have meant
+     * inventing a fake key to store, and a fake credential in a key store is a lie that the
+     * next reader has to discover. The [AiError.MissingKey] guard below is skipped for these,
+     * and [buildAuthHeaders] is called with an empty string.
+     */
+    protected open val requiresKey: Boolean = true
+
     protected abstract fun buildAuthHeaders(apiKey: String): Map<String, String>
     protected abstract fun buildRequestBody(request: AiRequest, apiKey: String): JsonObject
     protected abstract fun parseSSELine(line: String): AiChunk?
@@ -45,13 +67,28 @@ abstract class BaseHttpProvider(
             // it throws propagates to the collector, whose `.catch` is the last line of
             // defence — the chat must show an error, never crash.
             val apiKey = keyStore.getKey(id.name)
-            if (apiKey.isNullOrBlank()) {
+            if (requiresKey && apiKey.isNullOrBlank()) {
                 emit(AiChunk.Error(AiError.MissingKey(id)))
                 return@flow
             }
 
-            val requestBody = buildRequestBody(request, apiKey)
-            val url = "$baseUrl${getEndpoint(request)}"
+            // A keyless provider gets "" rather than null, so `buildAuthHeaders` and
+            // `redactSecrets` keep one signature across all five. `redactSecrets` already
+            // ignores a blank key.
+            val key = apiKey.orEmpty()
+
+            // Resolved here, not read from `baseUrl`: see the note on `resolveBaseUrl`. A
+            // provider whose address is not configured reports MissingKey — the same "you have
+            // not finished setting this up" state the key-less providers reach by the branch
+            // above, and the same sentence is the right one for both.
+            val resolvedBase = resolveBaseUrl()
+            if (resolvedBase.isNullOrBlank()) {
+                emit(AiChunk.Error(AiError.MissingKey(id)))
+                return@flow
+            }
+
+            val requestBody = buildRequestBody(request, key)
+            val url = "$resolvedBase${getEndpoint(request)}"
 
             // Developer Mode: hand the UI the two facts only this layer knows — where the
             // request actually went and what was actually sent. Emitted before the first
@@ -60,8 +97,8 @@ abstract class BaseHttpProvider(
                 val serialised = json.encodeToString(JsonObject.serializer(), requestBody)
                 emit(
                     AiChunk.Meta(
-                        endpoint = redactSecrets(url, apiKey),
-                        requestBody = redactSecrets(serialised, apiKey),
+                        endpoint = redactSecrets(url, key),
+                        requestBody = redactSecrets(serialised, key),
                     ),
                 )
             }
@@ -84,13 +121,13 @@ abstract class BaseHttpProvider(
             // context invariant is not violated.
             httpClient.preparePost(url) {
                 contentType(ContentType.Application.Json)
-                buildAuthHeaders(apiKey).forEach { (k, v) -> header(k, v) }
+                buildAuthHeaders(key).forEach { (k, v) -> header(k, v) }
                 setBody(json.encodeToString(JsonObject.serializer(), requestBody))
             }.execute { response ->
                 // Ktor does not throw on 4xx/5xx by default. Without this check an auth
                 // failure was read as an empty SSE stream and the UI hung on "generating".
                 if (!response.status.isSuccess()) {
-                    emit(AiChunk.Error(classifyHttpError(response, apiKey)))
+                    emit(AiChunk.Error(classifyHttpError(response, key)))
                     return@execute
                 }
 

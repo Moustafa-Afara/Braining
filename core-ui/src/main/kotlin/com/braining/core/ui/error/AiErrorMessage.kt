@@ -14,6 +14,7 @@ import com.braining.core.ui.text.BidiText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.braining.core.domain.model.AiError
+import com.braining.core.domain.model.ProviderId
 import com.braining.core.ui.R
 
 /**
@@ -40,10 +41,17 @@ import com.braining.core.ui.R
  */
 @Composable
 fun AiError.toUserMessage(): String = when (this) {
-    is AiError.MissingKey -> stringResource(
-        R.string.error_missing_key,
-        provider.displayName,
-    )
+    // **Two sentences, because there are two setups.** Every other provider is missing a key;
+    // Ollama has no key to miss and is missing an *address*. Telling its user to "add your API
+    // key in Settings" sends them looking for a field this app deliberately does not build —
+    // §10 entry 1, the platform naming the symptom it saw rather than the cause, reproduced by
+    // hand. The provider is asked, not the error type, because the error type is right.
+    is AiError.MissingKey ->
+        if (provider == ProviderId.OLLAMA) {
+            stringResource(R.string.error_ollama_no_address)
+        } else {
+            stringResource(R.string.error_missing_key, provider.displayName)
+        }
 
     is AiError.InvalidKey -> stringResource(
         R.string.error_invalid_key,

@@ -36,7 +36,7 @@
     <string name="clarify_dev_turns">Clarify turns: %1$d · model: %2$s</string>
     <string name="clarify_dev_timing">Interrogation: %1$d s · to answer: %2$d s</string>
     <string name="clarify_dev_options">Options on this question: %1$d</string>
-    <string name="clarify_dev_options_none">No options · last line written: "%1$s"</string>
+    <string name="clarify_dev_options_none">No options · last line written: \"%1$s\"</string>
 
     <string name="clarify_translate">Translate to Arabic</string>
     <string name="clarify_show_original">Show the original</string>

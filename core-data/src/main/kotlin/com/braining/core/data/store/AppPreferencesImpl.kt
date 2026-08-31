@@ -69,6 +69,12 @@ class AppPreferencesImpl @Inject constructor(
 
     override val onboardingDismissed: Flow<Boolean> = _onboardingDismissed.asStateFlow()
 
+    private val _ollamaUrl = MutableStateFlow(
+        runCatching { prefs.getString(KEY_OLLAMA_URL, "") }.getOrNull().orEmpty(),
+    )
+
+    override val ollamaUrl: Flow<String> = _ollamaUrl.asStateFlow()
+
     override suspend fun setDeveloperMode(enabled: Boolean) {
         // State first so the switch in Settings answers immediately; the write follows.
         _developerMode.value = enabled
@@ -128,6 +134,20 @@ class AppPreferencesImpl @Inject constructor(
         }
     }
 
+    override suspend fun setOllamaUrl(url: String) {
+        // Stored verbatim, exactly as typed. `LocalEndpoint` validates on read — normalising
+        // here would round-trip a rewritten value back into a field the user is mid-way through
+        // typing, which is the trap `setUserProfile` and `setSelectedModel` both document.
+        _ollamaUrl.value = url
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val editor = prefs.edit()
+                if (url.isBlank()) editor.remove(KEY_OLLAMA_URL) else editor.putString(KEY_OLLAMA_URL, url)
+                editor.apply()
+            }
+        }
+    }
+
     override suspend fun setSelectedProvider(providerId: ProviderId) {
         _selectedProvider.value = providerId.name
         withContext(Dispatchers.IO) {
@@ -153,5 +173,6 @@ class AppPreferencesImpl @Inject constructor(
         const val KEY_SELECTED_PROVIDER = "selected_provider"
         const val KEY_TTS_ENABLED = "tts_enabled"
         const val KEY_ONBOARDING_DISMISSED = "onboarding_dismissed"
+        const val KEY_OLLAMA_URL = "ollama_url"
     }
 }

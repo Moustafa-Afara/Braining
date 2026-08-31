@@ -23,6 +23,7 @@ import com.braining.core.domain.model.ProviderId
 import com.braining.core.domain.model.RequestDiagnostics
 import com.braining.core.domain.model.SttError
 import com.braining.core.domain.provider.AiProvider
+import com.braining.ai.providers.ProviderAvailability
 import com.braining.core.domain.routing.ModelRouter
 import com.braining.core.domain.routing.RouteReason
 import com.braining.core.domain.routing.RoutingDecision
@@ -31,7 +32,6 @@ import com.braining.core.domain.speech.ReaderStatus
 import com.braining.core.domain.speech.TextReader
 import com.braining.core.domain.speech.TranscriptionEvent
 import com.braining.core.domain.store.AppPreferences
-import com.braining.core.domain.store.EncryptedKeyStore
 import com.braining.ai.providers.toAiError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -232,7 +232,16 @@ data class ClarifyUiState(
  * from re-running the wrong one — and the wrong one here is destructive: re-opening the
  * interrogation throws the whole session away.
  */
-private enum class LastAction { CLARIFY, FORGE, EXECUTE }
+/**
+ * Which phase failed, and therefore what «أعد المحاولة» and the provider chips must re-run.
+ *
+ * **[REPLY] is separate from [CLARIFY] and the difference is destructive.** `start()` calls
+ * `ClarifyEngine.open`, which **discards the session** and re-opens the interrogation from the
+ * original idea. That is right for a first turn that failed and catastrophic for the twelfth:
+ * retrying a failed answer would have thrown away every question and answer before it. [REPLY]
+ * routes to `resume()` instead, which re-asks the same turn on the session as it stands.
+ */
+private enum class LastAction { CLARIFY, REPLY, FORGE, EXECUTE }
 
 /**
  * Owns one interrogation.
@@ -255,12 +264,8 @@ class ClarifyViewModel @Inject constructor(
     private val promptForge: PromptForge,
     private val providers: Map<String, @JvmSuppressWildcards AiProvider>,
     private val router: ModelRouter,
-    /**
-     * Read for one purpose: **which providers the user actually has a key for.** A fallback to a
-     * keyless provider trades one failure for a worse one — the second error names a missing key
-     * and reads as if the user had misconfigured something.
-     */
-    private val keyStore: EncryptedKeyStore,
+    /** Who can answer right now — including a PC that may be asleep. */
+    private val availability: ProviderAvailability,
     private val appPreferences: AppPreferences,
     private val speechToText: SpeechToText,
     /**
@@ -314,6 +319,27 @@ class ClarifyViewModel @Inject constructor(
 
     /** Every provider this execution has already spent. Guards the fallback against a loop. */
     private val triedThisExecution = mutableSetOf<ProviderId>()
+
+    /**
+     * The same guard for the interrogation and the forge.
+     *
+     * Kept apart from [triedThisExecution] deliberately. They have different lifetimes — one
+     * turn versus one whole answer — and merging them would mean a provider spent on question
+     * three could not be offered when the execution failed twenty minutes later. Each set is
+     * cleared by the action that starts its own phase, and by nothing else.
+     */
+    private val triedThisTurn = mutableSetOf<ProviderId>()
+
+    /**
+     * Reset the turn's provider budget.
+     *
+     * **Called on success, and by the user starting a new turn — never on entry to `start()` or
+     * `forge()`.** Those two are each reached three ways: fresh, from «أعد المحاولة», and from a
+     * provider chip; only the first is a new turn. Clearing on entry would forget the provider
+     * that had just failed and offer it straight back, which is the ping-pong `alreadyTried`
+     * exists to prevent.
+     */
+    private fun resetTurnBudget() = triedThisTurn.clear()
 
     /** The provider whose failure produced [ClarifyUiState.fallbackOptions]. */
     private var lastFailedProvider: ProviderId? = null
@@ -462,9 +488,13 @@ class ClarifyViewModel @Inject constructor(
         // `TurnCompleted`, so his answer stayed invisible until the model had finished writing
         // its *next* question, then appeared a fraction of a second after it. The data was never
         // wrong; the UI was reading it at the wrong moment.
+        // REPLY, not CLARIFY: a retry of this turn must resume the session, never re-open it.
+        lastAction = LastAction.REPLY
+        resetTurnBudget()
+        triedThisTurn += _uiState.value.provider
         val flow = clarifyEngine.reply(text, brain.first, brain.second, _uiState.value.developerMode)
         _uiState.update {
-            it.copy(inputText = "", error = null, turns = clarifyEngine.session.turns)
+            it.copy(inputText = "", error = null, fallbackOptions = emptyList(), turns = clarifyEngine.session.turns)
         }
         collect(flow)
     }
@@ -484,6 +514,8 @@ class ClarifyViewModel @Inject constructor(
         _uiState.update { it.copy(error = null, fallbackOptions = emptyList()) }
         when (lastAction) {
             LastAction.CLARIFY -> start()
+            // **Resume, not re-open.** See the note on `LastAction.REPLY`.
+            LastAction.REPLY -> resumeClarify()
             LastAction.FORGE -> forge()
             // **Resume, not restart.** After a feedback round the exchange holds the prompt, the
             // answer and the note; `execute()` would clear all three and silently re-answer the
@@ -843,7 +875,25 @@ class ClarifyViewModel @Inject constructor(
      * August ruling that survives: whatever happens, the screen says who actually answered.
      */
     fun chooseFallback(providerId: ProviderId) {
-        if (isBusy() || exchange.isEmpty()) return
+        if (isBusy()) return
+
+        // **Which phase failed decides what happens next**, and the four answers are genuinely
+        // different operations — not one operation with a flag. Until 2026-08-30 this method
+        // assumed the execution had failed, because that was the only phase that ever offered
+        // chips; now that the interrogation and the forge offer them too, the assumption would
+        // have re-run the wrong thing on the user's chosen provider.
+        when (lastAction) {
+            LastAction.EXECUTE -> chooseFallbackForExecution(providerId)
+            LastAction.CLARIFY -> switchBrainTo(providerId) { start() }
+            // resume, never open — the twelve turns already on screen are not disposable.
+            LastAction.REPLY -> switchBrainTo(providerId) { resumeClarify() }
+            LastAction.FORGE -> switchBrainTo(providerId) { forge() }
+        }
+    }
+
+    /** The original: continue the *answer* on someone else, naming both providers underneath. */
+    private fun chooseFallbackForExecution(providerId: ProviderId) {
+        if (exchange.isEmpty()) return
         val failed = lastFailedProvider
         lastFailedProvider = null
         lastAction = LastAction.EXECUTE
@@ -853,6 +903,65 @@ class ClarifyViewModel @Inject constructor(
             it.copy(executing = true, error = null, fallbackOptions = emptyList(), result = "")
         }
         currentJob = viewModelScope.launch { runExecution(providerId, replacing = failed) }
+    }
+
+    /**
+     * Move the whole screen to [providerId], then run [action].
+     *
+     * The interrogation and the forge read their provider from [ClarifyUiState.provider] through
+     * `brain()` — there is no per-call provider argument the way `runExecution` has one — so a
+     * fallback here is a **change of brain for the rest of the session**, not a detour for one
+     * request. That is also the honest behaviour: an interrogation is a conversation, and a user
+     * who was moved to Claude for one question and silently back to Gemini for the next would be
+     * reading a dialogue with two authors and no way to tell which said what.
+     *
+     * The model moves with it. Sending Gemini's model name to Claude is a guaranteed failure and
+     * would look exactly like the fallback itself not working.
+     */
+    private fun switchBrainTo(providerId: ProviderId, action: () -> Unit) {
+        currentJob?.cancel()
+        _uiState.update {
+            it.copy(
+                provider = providerId,
+                model = modelFor(providerId),
+                error = null,
+                fallbackOptions = emptyList(),
+            )
+        }
+        action()
+    }
+
+    /**
+     * Re-ask the turn that failed, on whatever provider the screen now holds.
+     *
+     * Goes through `ClarifyEngine.resume`, which re-issues the current turn **without** appending
+     * anything: `reply()` would file the user's answer a second time and `open()` would delete
+     * the interrogation. Both were reachable from this button before the phase split.
+     */
+    private fun resumeClarify() {
+        val brain = brain() ?: return
+        lastAction = LastAction.REPLY
+        triedThisTurn += _uiState.value.provider
+        collect(clarifyEngine.resume(brain.first, brain.second, _uiState.value.developerMode))
+    }
+
+    /**
+     * Who could take over the interrogation or the forge — the turn-scoped twin of the block in
+     * `finishExecution`.
+     *
+     * Same router, same rules: an empty list means a hop would be wrong (a missing key, a
+     * rejected key, a dead network, an unclassified failure), not that the user has no other
+     * keys.
+     */
+    private suspend fun turnFallbackOptions(error: AiError): List<ProviderId> {
+        val failed = _uiState.value.provider
+        lastFailedProvider = failed
+        return router.fallbackCandidates(
+            failed = failed,
+            error = error,
+            keyed = keyedProviders(),
+            alreadyTried = triedThisTurn,
+        )
     }
 
     /**
@@ -945,24 +1054,25 @@ class ClarifyViewModel @Inject constructor(
     private fun modelFor(providerId: ProviderId): String =
         modelOverrides[providerId.name]?.takeIf { it.isNotBlank() } ?: providerId.defaultModel
 
-    /** The providers the user holds a non-blank key for. Never throws; an unreadable store is an
-     * empty set, which costs a fallback rather than the screen. */
-    private suspend fun keyedProviders(): Set<ProviderId> = runCatching {
-        keyStore.getAllKeys()
-            .filterValues { it.isNotBlank() }
-            .keys
-            .mapNotNull { name -> ProviderId.entries.firstOrNull { it.name == name } }
-            .toSet()
-    }.getOrDefault(emptySet())
+    /**
+     * The providers that could answer, right now.
+     *
+     * Delegates to [ProviderAvailability] — this was an exact copy of `ChatViewModel`'s, and
+     * Ollama (no key, and a machine that can be switched off) would have been the change that
+     * let the two drift apart while each looked correct on its own screen.
+     */
+    private suspend fun keyedProviders(): Set<ProviderId> = availability.available(probeLocal = true)
 
     private fun forge() {
         val brain = brain() ?: return
         lastAction = LastAction.FORGE
+        triedThisTurn += _uiState.value.provider
         currentJob?.cancel()
         _uiState.update {
             it.copy(
                 forging = true,
                 error = null,
+                fallbackOptions = emptyList(),
                 forgedPrompt = "",
                 clearedPrompt = "",
                 frameworkId = null,
@@ -1024,6 +1134,7 @@ class ClarifyViewModel @Inject constructor(
                         // the name a restored session already had — a re-run would silently
                         // downgrade a good row to its fallback. Absence is not an instruction.
                         if (event.prompt.title.isNotBlank()) sessionTitle = event.prompt.title
+                        resetTurnBudget()
                         _uiState.update {
                             it.copy(
                                 forging = false,
@@ -1039,12 +1150,19 @@ class ClarifyViewModel @Inject constructor(
                         }
                     }
 
-                    is ForgeEvent.Failed -> _uiState.update {
-                        it.copy(
-                            forging = false,
-                            error = event.error,
-                            lastDiagnostics = if (it.developerMode) diagnostics() else null,
-                        )
+                    is ForgeEvent.Failed -> {
+                        // Same offer as every other phase. The forge is one provider call like
+                        // any other, and a user whose forge failed on a rate limit has exactly
+                        // the same remedy available as one whose execution did.
+                        val options = turnFallbackOptions(event.error)
+                        _uiState.update {
+                            it.copy(
+                                forging = false,
+                                error = event.error,
+                                fallbackOptions = options,
+                                lastDiagnostics = if (it.developerMode) diagnostics() else null,
+                            )
+                        }
                     }
                 }
             }
@@ -1328,6 +1446,7 @@ class ClarifyViewModel @Inject constructor(
     private fun start() {
         val brain = brain() ?: return
         lastAction = LastAction.CLARIFY
+        triedThisTurn += _uiState.value.provider
         collect(
             clarifyEngine.open(
                 _uiState.value.idea,
@@ -1408,35 +1527,47 @@ class ClarifyViewModel @Inject constructor(
                         _uiState.update { it.copy(streaming = it.streaming + event.text) }
                     }
 
-                    is ClarifyEvent.TurnCompleted -> _uiState.update {
-                        it.copy(
-                            // Read back from the engine rather than appended here. The engine
-                            // owns the session; two places building the same list is how the
-                            // model name ended up wrong in three files at once.
-                            turns = clarifyEngine.session.turns,
-                            engineTurns = clarifyEngine.session.engineTurnCount,
-                            streaming = "",
-                            state = ClarifyState.AWAITING_USER_DECISION,
-                            lastDiagnostics = if (it.developerMode) diagnostics() else null,
-                        )
+                    is ClarifyEvent.TurnCompleted -> {
+                        resetTurnBudget()
+                        _uiState.update {
+                            it.copy(
+                                // Read back from the engine rather than appended here. The engine
+                                // owns the session; two places building the same list is how the
+                                // model name ended up wrong in three files at once.
+                                turns = clarifyEngine.session.turns,
+                                engineTurns = clarifyEngine.session.engineTurnCount,
+                                streaming = "",
+                                state = ClarifyState.AWAITING_USER_DECISION,
+                                lastDiagnostics = if (it.developerMode) diagnostics() else null,
+                            )
+                        }
                     }
 
-                    is ClarifyEvent.Failed -> _uiState.update {
-                        it.copy(
-                            error = event.error,
-                            streaming = "",
-                            // Deliberately not left in ANALYZING: a failed turn must leave the
-                            // user able to type, retry or declare the idea ready. A screen that
-                            // strands someone on a spinner after a network blip is a worse
-                            // outcome than the blip.
-                            state = ClarifyState.AWAITING_USER_DECISION,
-                            // Kept on failure too. A request that failed is exactly when the
-                            // endpoint and the outgoing body are worth reading — the
-                            // `lastDiagnostics` reasoning from `2026-07-29-D`, which existed
-                            // because a failed request throws its bubble away and the
-                            // diagnostics with it.
-                            lastDiagnostics = if (it.developerMode) diagnostics() else null,
-                        )
+                    is ClarifyEvent.Failed -> {
+                        // **The gap the owner found on 2026-08-30.** The chooser had been built
+                        // for the execution phase only, so a provider that died mid-interrogation
+                        // — which is where a user spends most of their time on this screen —
+                        // produced a red card with nothing to do about it. Computed here, outside
+                        // `update`, because it reads the key store.
+                        val options = turnFallbackOptions(event.error)
+                        _uiState.update {
+                            it.copy(
+                                error = event.error,
+                                fallbackOptions = options,
+                                streaming = "",
+                                // Deliberately not left in ANALYZING: a failed turn must leave the
+                                // user able to type, retry or declare the idea ready. A screen that
+                                // strands someone on a spinner after a network blip is a worse
+                                // outcome than the blip.
+                                state = ClarifyState.AWAITING_USER_DECISION,
+                                // Kept on failure too. A request that failed is exactly when the
+                                // endpoint and the outgoing body are worth reading — the
+                                // `lastDiagnostics` reasoning from `2026-07-29-D`, which existed
+                                // because a failed request throws its bubble away and the
+                                // diagnostics with it.
+                                lastDiagnostics = if (it.developerMode) diagnostics() else null,
+                            )
+                        }
                     }
                 }
             }

@@ -74,7 +74,7 @@ core, built first. B (M6) = a PC bridge over Tailscale driving OpenCode headless
 ✅ **M3 Clarify + Forge — CLOSED 2026-08-17** · ✅ **M4 route + translate + feedback — CLOSED
 2026-08-18** · **«مِداد» identity built 2026-08-18 — untested on the phone** ·
 **M5 history + polish — tested on the phone 2026-08-28, four findings fixed the same day
-(M5.1)** · **M5.2 providers (OpenRouter, network Ollama) ← next** · M6 PC bridge.
+(M5.1)** · **M5.2 Ollama built 2026-08-31, untested** · **M5.3 key guide** · **OpenRouter ← next** · M6 PC bridge.
 
 ---
 
@@ -657,6 +657,26 @@ lessons were paid for by plans that had quietly been made unnecessary or already
   before 2026-08-30 keeps whatever damage it arrived with until the owner re-pastes it. Cheap to
   fix at read time in `EncryptedKeyStore`; deferred because it would silently rewrite a stored
   credential, which §10 entry 45 is precisely about.
+- ~~**The fallback chooser exists only in Clarify.**~~ **Closed 2026-08-30** — chat has it, and
+  so do Clarify's interrogation and forge phases, which never had it either. Neither was ever on
+  the queue: §10 entries 47 and 49 are about why a queue built by remembering misses these.
+- **Ollama's model name is only adopted in Settings.** `testOllama()` replaces a placeholder
+  model with a real one from the machine; the fallback path does not. A user who reaches Ollama
+  purely through a fallback chip could send a model name their machine does not have.
+  `ProviderAvailability` guards the empty-list case, not the wrong-name case.
+- **`translate()` and the Ollama probe both ignore `probeLocal = false`.** The parameter exists
+  and defaults to the cheap answer, but no caller passes false yet. Recorded so the next reader
+  does not assume it is dead and delete it.
+- **The key guide does not check the key against the prefix it shows.** `ProviderGuide.keyPrefix`
+  is displayed and never enforced, so pasting an OpenAI key into the Claude card still produces a
+  401 that reads as "my key is dead". A soft warning would catch the commonest newcomer mistake;
+  it is not built because a provider adding a new key format tomorrow would make the app reject a
+  valid credential, and that failure is worse than the one it prevents. Revisit only with a rule
+  that can be wrong safely.
+- **`translate()` still has no fallback offer.** The fourth provider call on the Clarify screen.
+  Left deliberately: a failed translation loses nothing — the original answer is still on screen
+  and the button can simply be pressed again — so the chips would be offering a hop the user does
+  not need. Recorded so the omission is a decision rather than the next thing found by accident.
 - **The AI-router toggle is unbuilt** (`BRAINING.md` §5). It toggles between an AI classifier and
   a rule table and neither exists; it belongs to M6 with the classifier. Recorded so it is not
   read as a missed M4 item.
@@ -843,6 +863,83 @@ These are the ones that were paid for more than once. The archive has the incide
     buttons whose contents can grow needs either a wrap, a scroll, or a second row decided in
     advance.
 
+54. **A workaround that changes where state lives will be used by someone who does not know it
+    moved.** A stale `.git/index.lock` blocked every commit, and the agent could not delete files
+    on the owner's machine — so it worked around it with `GIT_INDEX_FILE=$HOME/braining.index`,
+    staged everything there, and then handed the owner a plain `git commit`. PowerShell used the
+    **default** index, which was frozen weeks stale behind the lock. The commit went through, it
+    was labelled M5.2 Ollama, and what it actually recorded was the **deletion of all of M5.3** —
+    a revert, wearing the message of a feature. Nothing was lost, because the working tree is the
+    real artefact and it was correct throughout, but the history now needs a repair commit.
+    **The workaround was sound; handing over a command that did not know about it was not.** If a
+    workaround relocates state, every instruction that touches that state must carry the
+    relocation with it — or the workaround must be undone before anyone else is asked to act.
+    Corollary, learned the expensive way: `git add -A` in this repo now writes the DEFAULT index,
+    and no session should introduce a second one again.
+
+53. **A permission you cannot scope in config must be scoped in code — and then the code IS
+    the security control.** Reaching Ollama needs cleartext HTTP, and a network security config
+    matches DNS names: it cannot say "private addresses only", and the user's PC address is
+    unknown at build time anyway. So the manifest grants cleartext broadly and `LocalEndpoint` —
+    the only code that can produce an Ollama URL — refuses anything not loopback/RFC1918/RFC4193.
+    **That is the stronger arrangement, but only while the code is actually right**, and review
+    found it was not: `isPrivate` decided IPv6 by string prefix while the gate was merely
+    "contains a colon", so `fd00::1.evil.com` was accepted as private. The lesson is not "don't
+    do this" — it is that **the moment a rule moves from config into code, it inherits code's
+    failure modes and needs code's tests.** Nine cases now cover the refusals, including that one.
+
+52. **"Private" and "mine" are not the same range.** `100.64/10` was added to the allowed
+    addresses because Tailscale assigns from it and M6 will want it. It is also what **mobile
+    carriers** assign, so on a cellular connection those addresses are other subscribers'
+    devices — a mistyped `100.x` would put a prompt in cleartext on a stranger's phone. Reversed
+    within the hour. Building for a future milestone's convenience is how a present milestone's
+    security rule gets a hole in it; add the range with the bridge that needs it, not before.
+
+51. **A bare `"` in a string resource is deleted, silently, and only in the shipped build.**
+    AAPT2 treats the double quote as its whitespace-preservation delimiter. Five English strings
+    named a button — `press "Create API key"` — and every one would have shipped with the quotes
+    stripped, leaving the button's name unmarked inside the sentence, for the exact newcomer the
+    screen exists to help. **An even number of quotes does not error**; it just quietly changes
+    the text, which is why this is worse than the apostrophe bug from 2026-08-28 that fails the
+    build loudly. Three older strings had it too and had shipped that way for weeks. Escape as
+    `\"`, and grep the resources for `(?<!\\)["']` rather than trusting a green build.
+
+49. **The same gap found twice in two days is not bad luck; the search was wrong both times.**
+    Entry 47 says a feature built on one *screen* is a feature on one screen. The fix put the
+    fallback chooser in chat — and the owner immediately found it missing from the
+    *interrogation*, on the screen that already had it, because it had only ever been wired to
+    the **execution** phase. Clarify runs four provider calls (interrogate · forge · execute ·
+    translate) and only one of them offered a way out. **A capability belongs to every code path
+    that can produce the failure it answers, and the way to enumerate those is to grep for the
+    error construction — `is *Event.Failed`, `AiChunk.Error`, `.catch` — not to reason about
+    screens.** The screen was the wrong unit of search; the failure site is the right one.
+
+50. **Reusing the "start" function as the "retry" function silently destroys state.** Retrying a
+    failed answer mid-interrogation called `start()`, which calls `ClarifyEngine.open`, which
+    **replaces the session** — twelve turns of interrogation gone, with no warning and no undo,
+    from a button labelled «أعد المحاولة». It survived because a first-turn failure is the only
+    one anyone ever tested, and there `open` is correct. Adding the fallback chips would have
+    made it reachable from a second button. **When a retry and a fresh start share a function,
+    check what the fresh start throws away** — and if it throws away anything, they are two
+    functions. `resume()` now exists precisely to be the one that keeps the session.
+
+48. **A guard that detects the untouched default does not protect against the mistake people
+    make.** `share_download_url` shipped as `…/USER/REPO/…` and the button was hidden while the
+    string still contained `USER/REPO`. The owner replaced the **whole string** with his
+    repository's clone URL — `…/Braining.git`, which is the URL GitHub puts in front of you on
+    the repository page — and the guard passed it, because the placeholder was indeed gone. The
+    check now tests the **shape** the value must have (`https://github.com/…/app-release.apk`)
+    rather than the shape it must not. **"Did they edit it?" is a weaker question than "is it
+    right?", and only the second one is worth asking.**
+
+47. **A feature built on one screen is not a feature; it is a feature on one screen.** The manual
+    fallback chooser landed in Clarify on 28 August and the milestone was recorded as done. Two
+    days later Gemini returned 429 **in chat** — where the chooser had never been built — and the
+    card named the failure and offered nothing. The whole point of the 28 August ruling was that
+    the user picks who answers when a provider fails; on the screen he uses most, he could not.
+    A capability stated in a ruling belongs on **every screen the failure can reach**, and the
+    only reliable way to know which those are is to grep for the error path, not to remember.
+
 46. **`?:` after a call whose `null` means success inverts the result silently.**
     `provider?.verify(key) ?: AiError.Unknown(… "Provider not found")` — `verify` returns `null`
     for **a key that works**, so every good key in onboarding was reported as a missing provider.
@@ -958,6 +1055,68 @@ One line each. Full text in `docs/HISTORY_2026-07_to_08.md`.
 > an interval from any date above that line.
 
 ```
+2026-08-31-B  **M5.2 — Ollama.** Models on the owner's own PC over the LAN: no key, no quota, no
+              bill, and it works with the internet down. Uses Ollama's **OpenAI-compatible**
+              `/v1/chat/completions`, so `BaseHttpProvider`'s SSE loop, error classifier and
+              diagnostics all work unchanged — a second streaming format would have been a second
+              thing to get wrong for no visible behaviour. `BaseHttpProvider` gained two hooks
+              (`requiresKey`, `resolveBaseUrl`) because this provider has no key and no fixed
+              address. `LocalEndpoint` in `:core-domain` parses what the user types and **refuses
+              any non-private address** — see §10 entry 53 for why that lives in code. Four probe
+              outcomes, not two, and the unreachable one names its three causes in likelihood
+              order (§10 entry 1). `ProviderAvailability` replaces the `keyedProviders()` that had
+              been copy-pasted into both ViewModels, because "holds a key" stopped being the same
+              question as "can answer" (§10 entry 47 applied before it bit).
+              Review found 10 real defects and 6 false alarms. The two that mattered: the IPv6
+              hole above, and `runCatching` in `ProviderAvailability` swallowing the
+              `CancellationException` that `probe()` went to deliberate trouble to rethrow. Also:
+              an empty model list counted as "available"; `Probe.Unreachable.detail` was collected
+              and read by nobody; an unconfigured Ollama told the user to add an API key it has no
+              field for; and `displayName` carried an Arabic parenthetical into every English
+              sentence in the app.
+2026-08-31-A  **M5.3 — «كيف أحصل على المفتاح؟».** The owner asked for per-provider links in
+              Settings explaining how to obtain each API key and what each account needs first.
+              `ProviderGuide` in `:core-domain` (key page, terms page, key prefix, free-tier and
+              region flags — verified against each vendor's own documentation on 2026-08-30, 6
+              tests); `ProviderKeyGuide` in `feature-settings`, collapsed by default, used by
+              **both** Settings and Onboarding — §10 entry 47 applied in advance for once.
+              **Deliberately carries no prices and no quota numbers.** A figure compiled into an
+              APK a friend installed in August and opens in March is not stale, it is wrong, and
+              wrong about money; everything with a digit is one tap away on the vendor's page.
+              Adversarial review found 6 defects, none of them build-breaking and two of them
+              invisible until a user read the screen: **five English strings would have shipped
+              with their quotes silently deleted** by AAPT2 (§10 entry 51 — three older strings
+              had the same bug and were fixed too), and the Arabic key-prefix line would have
+              rendered `sk-ant-` as «-sk-ant», because a trailing hyphen at the end of an RTL
+              paragraph takes the paragraph's direction. Also caught: a price claim («الأرخص بين
+              الأربعة») that contradicted this feature's own no-prices rule two lines above it,
+              an Arabic gender error, a console named by its old name, and a test whose name
+              promised two URLs while it checked one.
+2026-08-30-F  **The fallback chooser reaches the other three phases**, and a session-destroying
+              retry is fixed on the way. The owner: «في نمط الاستجواب عند توقف أحد النماذج لا
+              يطرح عليّ خيار التبديل». Correct — the chips were wired to `finishExecution` only,
+              so the interrogation and the forge failed with nothing to offer. `ClarifyViewModel`
+              gained `triedThisTurn`, `turnFallbackOptions`, `switchBrainTo`, `resumeClarify` and
+              a phase-dispatching `chooseFallback`; `LastAction` gained **REPLY**. No UI change —
+              the error card was already one card for every phase, which is why the chips
+              appeared the moment the state was populated.
+              **The bug found on the way is the more expensive one**: `retry()` mapped CLARIFY to
+              `start()`, and `start()` calls `ClarifyEngine.open`, which discards the session. A
+              retry after a failed *answer* would have deleted the whole interrogation. `resume()`
+              added to `ClarifyEngine` — re-asks the current turn, appends nothing, deletes
+              nothing. §10 entries 49 and 50.
+2026-08-30-E  **The fallback chooser reaches chat**, and the share-link guard is repaired. The
+              owner's Gemini key was fixed by the sanitizer's own rule (he re-pasted it) and the
+              provider then returned a real **429 quota** error — which is exactly the case the
+              28 August ruling was written for, and chat had no chooser. `ChatViewModel` gained
+              `router`, `fallbackOptions`, `triedThisTurn`, `chooseFallback`, `tryAnyFallback`
+              and `retry`; `sendMessage` split into "append the turn" + `runCompletion(provider)`
+              so a retry and a fallback are one operation with a different argument. Chat's
+              fallback **persists the choice** (a conversation continues; Clarify's answers one
+              question) — §10 entry 47. Separately, `ShareCard`'s readiness test now checks the
+              URL's shape rather than the absence of the placeholder, after the owner replaced
+              the whole string with his repository's `.git` clone URL and the old test passed it
+              — §10 entry 48.
 2026-08-30-D  **M5.2 — the batch the Gemini failure paid for.** Three owner requests
               (2026-08-30): the share button now shares the **GitHub download link**; the request
               body in Developer Mode gained a copy button per part; **every provider error gained

@@ -11,12 +11,14 @@ import com.braining.core.domain.model.ProviderState
 import com.braining.core.domain.provider.AiProvider
 import com.braining.core.domain.store.AppPreferences
 import com.braining.core.domain.store.EncryptedKeyStore
+import com.braining.ai.providers.ollama.OllamaProvider
 import com.braining.core.domain.text.ApiKeySanitizer
 import com.braining.core.domain.text.StorageSize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -46,6 +48,16 @@ data class SettingsUiState(
      */
     val deepgramKeyFixes: List<ApiKeySanitizer.Fix> = emptyList(),
 
+    // ── M5.2 · Ollama ────────────────────────────────────────────────────────────────────
+    /** The address of the user's own machine, exactly as typed. Validated on read, never here. */
+    val ollamaUrl: String = "",
+
+    /** The last connection test, or null if none has been run in this session. */
+    val ollamaProbe: OllamaProvider.Probe? = null,
+
+    /** True while a test is in flight, so the button can say so and refuse a second tap. */
+    val ollamaTesting: Boolean = false,
+
     /**
      * The "about me" note. Read by CLARIFY and FORGE only — `ANSWERS.md` Part 8 §D3.
      *
@@ -72,6 +84,14 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val keyStore: EncryptedKeyStore,
+    /**
+     * The concrete class, not the `AiProvider` interface — deliberately.
+     *
+     * `probe()` has no place on `AiProvider`: no other provider can be *asleep*, and widening
+     * the interface so one implementation could report a third state would push that
+     * impossibility onto four classes that would have to answer it with a lie.
+     */
+    private val ollama: OllamaProvider,
     private val appPreferences: AppPreferences,
     private val providers: Map<String, @JvmSuppressWildcards AiProvider>,
     /** M5. Read for one number: how much disk the history occupies. */
@@ -107,6 +127,27 @@ class SettingsViewModel @Inject constructor(
             appPreferences.ttsEnabled.collect { on ->
                 _uiState.update { it.copy(ttsEnabled = on) }
             }
+        }
+
+        // Collected, not read once: the address is written by this same screen, and a value read
+        // at construction would leave the field showing the pre-edit text after a rotation.
+        viewModelScope.launch {
+            appPreferences.ollamaUrl.collect { url ->
+                _uiState.update { if (it.ollamaUrl == url) it else it.copy(ollamaUrl = url) }
+            }
+        }
+
+        // **One silent probe on open, only when an address is already saved.**
+        //
+        // Without it the model picker disappeared every time the user left and returned to
+        // Settings: the list lives in the probe result, the probe result dies with the
+        // ViewModel, and the card then showed no way to change model until the user pressed
+        // Test again — a control that exists, vanishes, and comes back for reasons the user
+        // cannot see. Costs nothing when the field is empty, because `probe` returns
+        // NotConfigured without touching the network; costs at most the fallback timeout when
+        // the machine is asleep.
+        viewModelScope.launch {
+            if (appPreferences.ollamaUrl.first().isNotBlank()) testOllama()
         }
 
         refreshHistoryStorage()
@@ -352,4 +393,71 @@ class SettingsViewModel @Inject constructor(
          */
         const val DEEPGRAM_KEY_ID = "DEEPGRAM"
     }
+
+    // ── M5.2 · Ollama ────────────────────────────────────────────────────────────────────
+
+    /**
+     * The address field, as typed.
+     *
+     * No trimming, no normalising, no validation on the way in — `LocalEndpoint` does all three
+     * on the way out. A field that rewrites what someone is halfway through typing is the trap
+     * `updateModel` and `updateUserProfile` both document; here it would be worse, because
+     * someone typing `192.168.1.5` passes through `192.168.1.` and `192.168.1` on the way, and
+     * every one of those is briefly a different valid address.
+     *
+     * The stale probe result is cleared: a green tick that belonged to the previous address is a
+     * screen telling the user something that was true a moment ago and is not true now.
+     */
+    fun updateOllamaUrl(url: String) {
+        _uiState.update { it.copy(ollamaUrl = url, ollamaProbe = null) }
+        viewModelScope.launch { appPreferences.setOllamaUrl(url) }
+    }
+
+    /**
+     * Ask the machine whether it is there.
+     *
+     * Costs nothing — no tokens, no money, no quota — which is why this provider gets a test
+     * button and the other four get a «تحقّق» that spends a real request.
+     */
+    fun testOllama() {
+        if (_uiState.value.ollamaTesting) return
+        _uiState.update { it.copy(ollamaTesting = true, ollamaProbe = null) }
+        viewModelScope.launch {
+            val result = ollama.probe()
+
+            // **Everything decided out here, before `update`.** `MutableStateFlow.update` takes a
+            // lambda that may be re-run on contention, so a side effect inside it — a disk write,
+            // a launched coroutine — happens an unpredictable number of times. The same rule
+            // `ChatViewModel.fallbackOptionsFor` follows, for the same reason.
+            val models = (result as? OllamaProvider.Probe.Reachable)?.models.orEmpty()
+            val current = _uiState.value.providers[ProviderId.OLLAMA]?.selectedModel
+
+            // Choosing a model for the user is defensible **here specifically**: the name they
+            // are carrying is the enum's placeholder or a model they have since deleted — either
+            // way it is certainly absent from the machine — and every name in this list is
+            // certainly present. A name that cannot work is not a choice worth preserving.
+            val adopted = models.firstOrNull()?.takeIf { current.isNullOrBlank() || current !in models }
+
+            _uiState.update { state ->
+                state.copy(
+                    ollamaTesting = false,
+                    ollamaProbe = result,
+                    providers = if (adopted == null) {
+                        state.providers
+                    } else {
+                        state.providers.toMutableMap().apply {
+                            val existing = this[ProviderId.OLLAMA]
+                                ?: ProviderState(providerId = ProviderId.OLLAMA, selectedModel = "")
+                            this[ProviderId.OLLAMA] = existing.copy(selectedModel = adopted)
+                        }
+                    },
+                )
+            }
+
+            if (adopted != null) appPreferences.setSelectedModel(ProviderId.OLLAMA, adopted)
+        }
+    }
+
+    /** Pick one of the models the machine reported. */
+    fun selectOllamaModel(model: String) = updateModel(ProviderId.OLLAMA, model)
 }

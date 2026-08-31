@@ -120,4 +120,8 @@
     <string name="copy_action">نسخ</string>
     <string name="copy_error">نسخ رسالة الخطأ</string>
     <string name="copy_part">نسخ هذا الجزء</string>
+    <!-- Ollama has no key to be missing; it has an address that has not been set. Sending its
+         user to look for an API key field would be this app reproducing by hand the mistake
+         §10 entry 1 is about. -->
+    <string name="error_ollama_no_address">اكتب عنوان حاسوبك في الإعدادات أوّلاً — Ollama لا يحتاج مفتاحاً.</string>
 </resources>

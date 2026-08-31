@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Cleartext HTTP, permitted for one feature and constrained in code rather than here.
+
+    WHY THIS FILE EXISTS
+    Ollama runs on the user's own computer and speaks plain http:// on port 11434. Since
+    Android 9 the platform blocks cleartext by default, so without this the Ollama provider
+    cannot connect at all.
+
+    WHY THE RULE IS NOT WRITTEN HERE
+    The rule this app actually wants is "cleartext to private addresses only". A network
+    security config matches DNS names and IP literals; it CANNOT express a CIDR range, and the
+    user's PC address is unknown at build time anyway. So the permission granted here is broad,
+    and the real constraint lives in `LocalEndpoint` in :core-domain — the only code that can
+    produce an Ollama base URL, which refuses anything that is not loopback, RFC 1918, RFC 3927,
+    RFC 4193 or the Tailscale CGNAT range, and which is unit-tested.
+
+    That is a stronger guarantee than this file could have made, not a weaker one.
+
+    WHAT THIS DOES NOT DO
+    It does not weaken the other four providers. Their base URLs are https:// string constants
+    compiled into the APK; permitting the app to speak cleartext is not an instruction to
+    downgrade a request that already names https.
+
+    DO NOT set usesCleartextTraffic in the manifest instead. That flag is coarser, it is ignored
+    when this file is present, and it leaves no place to write down why.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

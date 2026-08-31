@@ -42,4 +42,4 @@ keystore.properties*
 build-log*.txt
 
 # Scratch produced by a review pass. Not part of the project.
-.m52-review.diff
+.m5*-*.diff
