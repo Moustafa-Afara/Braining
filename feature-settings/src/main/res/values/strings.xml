@@ -82,11 +82,35 @@
         شكل الرابط الذي ينزّل الملفّ مباشرةً:
           https://github.com/USER/REPO/releases/latest/download/app-release.apk
     -->
-    <string name="share_download_url">https://github.com/USER/REPO/releases/latest/download/app-release.apk</string>
+    <string name="share_download_url">https://github.com/Moustafa-Afara/Braining/releases/latest/download/app-release.apk</string>
     <string name="share_message">جرّب «فهم» — تطبيق يحوّل فكرتك المنطوقة بالعربية إلى نتيجة، بعد أن يستجوبك فيها حتى تنضج.\n\nنزّله من هنا:\n%1$s\n\n(ستحتاج مفتاحاً واحداً مجانياً — التطبيق يشرح لك كيف عند أوّل فتح.)</string>
     <string name="settings_share_title">شارك التطبيق</string>
     <string name="settings_share_subtitle">أرسل رابط التنزيل لمن تشاء. الرابط يشير دائماً إلى أحدث نسخة، فلا يتعطّل مع الوقت.</string>
     <string name="settings_share_action">شارك الرابط</string>
-    <string name="settings_share_not_ready">لم يُضبط رابط التنزيل بعد. بدّل USER/REPO في share_download_url باسم مستودعك على GitHub، ثم أعد البناء.</string>
+    <string name="settings_share_not_ready">رابط التنزيل غير صالح. يجب أن ينتهي بـ app-release.apk — راجع share_download_url ثم أعد البناء.</string>
     <string name="settings_version">النسخة %1$s</string>
+    <!-- ══ M5.3 · «كيف أحصل على المفتاح؟» ══════════════════════════════════════════════
+         سطران لكل مزوّد: ما تحتاجه قبل أن تبدأ، وماذا يشبه المفتاح. بلا أسعار وبلا أرقام
+         حصص — تلك تتغيّر كل بضعة أشهر، ورقم مطبوع داخل نسخة ثبّتها صديق في آب وفتحها في
+         آذار ليس «قديماً» بل **خاطئاً**، وخاطئ في الاتجاه الذي يكلّف مالاً. كل ما يحمل رقماً
+         يُترك لصفحة المزوّد نفسه. -->
+    <string name="key_guide_open">كيف أحصل على المفتاح؟</string>
+    <string name="key_guide_close">إخفاء</string>
+    <string name="key_guide_button">افتح صفحة المفاتيح</string>
+    <string name="key_guide_docs">اقرأ الشروط</string>
+    <!-- \u2068 FSI … \u2069 PDI. The value ends in a hyphen (`sk-ant-`), and a trailing
+         neutral at the end of an RTL paragraph takes the paragraph direction, which would
+         reorder it to the far left and show «-sk-ant». The isolate makes the placeholder its
+         own bidi paragraph so it renders exactly as issued. -->
+    <string name="key_guide_prefix">المفتاح يبدأ عادةً بـ \u2068%1$s\u2069</string>
+    <string name="key_guide_free">يكفي حساب مجاني — بلا بطاقة ائتمان.</string>
+    <string name="key_guide_paid">مدفوع: تحتاج وسيلة دفع في حسابك قبل أوّل طلب.</string>
+    <string name="key_guide_region">⚠ غير متاح في بعض الدول. إن رفضك بسبب موقعك فالمشكلة ليست في مفتاحك — اضغط «اقرأ الشروط» لترى قائمة الدول.</string>
+
+    <string name="key_guide_gemini">أنشئ حساب Google، ثم افتح Google AI Studio واضغط «Create API key». لا تحتاج بطاقة ائتمان.</string>
+    <string name="key_guide_anthropic">أنشئ حساباً في لوحة تحكّم Claude على platform.claude.com، أضف وسيلة دفع، ثم من قسم API keys اضغط «Create Key».</string>
+    <string name="key_guide_openai">أنشئ حساباً في منصّة OpenAI، أضف وسيلة دفع أو رصيداً، ثم من صفحة API keys اضغط «Create new secret key».</string>
+    <string name="key_guide_deepseek">أنشئ حساباً في منصّة DeepSeek، اشحن رصيداً، ثم من قسم API keys اضغط «Create API key».</string>
+
+    <string name="key_guide_copy_once">انسخ المفتاح فور ظهوره — كل هذه المواقع تعرضه مرّة واحدة فقط ولا يمكن رؤيته ثانيةً.</string>
 </resources>

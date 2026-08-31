@@ -126,6 +126,12 @@ fun OnboardingScreen(
                         )
                     }
 
+                    // The same component Settings shows, on purpose. §10 entry 47: a capability
+                    // that lives on one screen is a capability on one screen — and onboarding is
+                    // where a friend meets this question *first*, before they have any idea that
+                    // Settings exists.
+                    ProviderKeyGuide(state.provider)
+
                     OutlinedTextField(
                         value = state.key,
                         onValueChange = viewModel::updateKey,

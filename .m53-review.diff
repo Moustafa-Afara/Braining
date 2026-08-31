@@ -1,0 +1,515 @@
+diff --git a/feature-settings/src/main/kotlin/com/braining/feature/settings/OnboardingScreen.kt b/feature-settings/src/main/kotlin/com/braining/feature/settings/OnboardingScreen.kt
+index c233422..d117d20 100644
+--- a/feature-settings/src/main/kotlin/com/braining/feature/settings/OnboardingScreen.kt
++++ b/feature-settings/src/main/kotlin/com/braining/feature/settings/OnboardingScreen.kt
+@@ -126,6 +126,12 @@ fun OnboardingScreen(
+                         )
+                     }
+ 
++                    // The same component Settings shows, on purpose. §10 entry 47: a capability
++                    // that lives on one screen is a capability on one screen — and onboarding is
++                    // where a friend meets this question *first*, before they have any idea that
++                    // Settings exists.
++                    ProviderKeyGuide(state.provider)
++
+                     OutlinedTextField(
+                         value = state.key,
+                         onValueChange = viewModel::updateKey,
+diff --git a/feature-settings/src/main/kotlin/com/braining/feature/settings/SettingsScreen.kt b/feature-settings/src/main/kotlin/com/braining/feature/settings/SettingsScreen.kt
+index cfe6bed..a89dd8e 100644
+--- a/feature-settings/src/main/kotlin/com/braining/feature/settings/SettingsScreen.kt
++++ b/feature-settings/src/main/kotlin/com/braining/feature/settings/SettingsScreen.kt
+@@ -648,6 +648,12 @@ private fun ProviderCard(
+             // after a verify has failed for a reason they will guess wrong.
+             KeyFixNotice(state.keyFixes)
+ 
++            // **The owner's request of 2026-08-31**, and the answer to the four questions every
++            // friend asks him by hand: where the key lives, what the account needs first, what
++            // the key looks like, and — for Gemini — whether their country is allowed at all.
++            // Collapsed: it is read once, and four open panels would bury the settings.
++            ProviderKeyGuide(state.providerId)
++
+             Row(
+                 modifier = Modifier.fillMaxWidth(),
+                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+diff --git a/feature-settings/src/main/res/values-en/strings.xml b/feature-settings/src/main/res/values-en/strings.xml
+index 47cdb86..cd72c9c 100644
+--- a/feature-settings/src/main/res/values-en/strings.xml
++++ b/feature-settings/src/main/res/values-en/strings.xml
+@@ -67,4 +67,21 @@
+     <string name="settings_share_action">Share the link</string>
+     <string name="settings_share_not_ready">The download link is not valid. It must end in app-release.apk — check share_download_url, then rebuild.</string>
+     <string name="settings_version">Version %1$s</string>
++    <!-- M5.3 · the per-provider key guide. No prices, no quota figures: those go stale inside a
++         shipped APK, and a stale figure about money is worse than no figure. -->
++    <string name="key_guide_open">How do I get this key?</string>
++    <string name="key_guide_close">Hide</string>
++    <string name="key_guide_button">Open the keys page</string>
++    <string name="key_guide_docs">Read the terms</string>
++    <string name="key_guide_prefix">The key usually starts with %1$s</string>
++    <string name="key_guide_free">A free account is enough — no credit card.</string>
++    <string name="key_guide_paid">Paid: you need a payment method on the account before the first request.</string>
++    <string name="key_guide_region">⚠ Not available in every country. If it refuses you because of your location, your key is not the problem — tap "Read the terms" for the list.</string>
++
++    <string name="key_guide_gemini">Create a Google account, open Google AI Studio and press "Create API key". No credit card needed.</string>
++    <string name="key_guide_anthropic">Create an account in the Anthropic Console, add a payment method, then press "Create Key" under API Keys.</string>
++    <string name="key_guide_openai">Create an account on the OpenAI platform, add a payment method or credit, then press "Create new secret key" on the API keys page.</string>
++    <string name="key_guide_deepseek">Create an account on the DeepSeek platform, top up a balance, then press "Create API key" under API keys. The cheapest of the four.</string>
++
++    <string name="key_guide_copy_once">Copy the key the moment it appears — all four sites show it once and never again.</string>
+ </resources>
+diff --git a/feature-settings/src/main/res/values/strings.xml b/feature-settings/src/main/res/values/strings.xml
+index 2808a52..43d8999 100644
+--- a/feature-settings/src/main/res/values/strings.xml
++++ b/feature-settings/src/main/res/values/strings.xml
+@@ -89,4 +89,24 @@
+     <string name="settings_share_action">شارك الرابط</string>
+     <string name="settings_share_not_ready">رابط التنزيل غير صالح. يجب أن ينتهي بـ app-release.apk — راجع share_download_url ثم أعد البناء.</string>
+     <string name="settings_version">النسخة %1$s</string>
++    <!-- ══ M5.3 · «كيف أحصل على المفتاح؟» ══════════════════════════════════════════════
++         سطران لكل مزوّد: ما تحتاجه قبل أن تبدأ، وماذا يشبه المفتاح. بلا أسعار وبلا أرقام
++         حصص — تلك تتغيّر كل بضعة أشهر، ورقم مطبوع داخل نسخة ثبّتها صديق في آب وفتحها في
++         آذار ليس «قديماً» بل **خاطئاً**، وخاطئ في الاتجاه الذي يكلّف مالاً. كل ما يحمل رقماً
++         يُترك لصفحة المزوّد نفسه. -->
++    <string name="key_guide_open">كيف أحصل على المفتاح؟</string>
++    <string name="key_guide_close">إخفاء</string>
++    <string name="key_guide_button">افتح صفحة المفاتيح</string>
++    <string name="key_guide_docs">اقرأ الشروط</string>
++    <string name="key_guide_prefix">المفتاح يبدأ عادةً بـ %1$s</string>
++    <string name="key_guide_free">تكفي حسابك المجاني — بلا بطاقة ائتمان.</string>
++    <string name="key_guide_paid">مدفوع: تحتاج وسيلة دفع في حسابك قبل أوّل طلب.</string>
++    <string name="key_guide_region">⚠ غير متاح في بعض الدول. إن رفضك بسبب موقعك فالمشكلة ليست في مفتاحك — اضغط «اقرأ الشروط» لترى قائمة الدول.</string>
++
++    <string name="key_guide_gemini">أنشئ حساب Google، ثم افتح Google AI Studio واضغط «Create API key». لا تحتاج بطاقة ائتمان.</string>
++    <string name="key_guide_anthropic">أنشئ حساباً في لوحة تحكّم Anthropic، أضف وسيلة دفع، ثم من قسم API Keys اضغط «Create Key».</string>
++    <string name="key_guide_openai">أنشئ حساباً في منصّة OpenAI، أضف وسيلة دفع أو رصيداً، ثم من صفحة API keys اضغط «Create new secret key».</string>
++    <string name="key_guide_deepseek">أنشئ حساباً في منصّة DeepSeek، اشحن رصيداً، ثم من قسم API keys اضغط «Create API key». الأرخص بين الأربعة.</string>
++
++    <string name="key_guide_copy_once">انسخ المفتاح فور ظهوره — كل هذه المواقع تعرضه مرّة واحدة فقط ولا يمكن رؤيته ثانيةً.</string>
+ </resources>
+===== NEW FILE: ProviderGuide.kt =====
+package com.braining.core.domain.provider
+
+import com.braining.core.domain.model.ProviderId
+
+/**
+ * Where each provider's API key comes from, and what it costs to get one.
+ *
+ * ## Why this exists
+ *
+ * The owner's distribution plan is friends, not developers (`ANSWERS.md` Part 3 §A). A friend who
+ * installs this app meets a screen asking for four API keys and has no idea what an API key is,
+ * where to get one, or which of the four is free. **Every one of them has to ask him**, and he
+ * answers the same four questions every time.
+ *
+ * There is a sharper reason too, and the 2026-08-30 Gemini incident is it: when a key fails, the
+ * first question is always *"is the key wrong, or is my account wrong?"* — and that question is
+ * unanswerable without knowing what the account was supposed to have in the first place.
+ *
+ * ## What is in here, and what deliberately is not
+ *
+ * **URLs and the shape of a key.** Those are stable, and when they do change the failure is
+ * loud — a dead link is visible in one tap.
+ *
+ * **No prices, no quota numbers, no model lists.** Those change every few months, and a number
+ * baked into an APK that a friend installed in August and opens in March is not out of date, it
+ * is **wrong** — and it is wrong in the direction that costs money. The screen sends the user to
+ * the provider's own page for anything that carries a figure. §10 entry 3's rule about confident
+ * claims from stale evidence applies to shipped strings exactly as it applies to diagnoses.
+ *
+ * Facts below verified against each vendor's own documentation on **2026-08-30**. Re-verify
+ * before changing them; do not "fix" one from memory.
+ *
+ * Pure, in `:core-domain`, unit-tested — no Android, no I/O.
+ */
+object ProviderGuide {
+
+    /**
+     * @param keyUrl the page that creates a key — the deepest link that survives, not a homepage.
+     * @param docsUrl the page that answers "what do I need first?" — pricing, or the region list.
+     * @param keyPrefix what a valid key starts with. Shown, never enforced: a provider may add a
+     *   format tomorrow, and an app that refused the new one would be broken by someone else's
+     *   improvement. Its job is to let a user notice they pasted OpenAI's key into Claude's card
+     *   — the mistake that produces a 401 and reads as "my key is dead".
+     * @param freeTier true when a working key can be had with **no payment method at all**.
+     * @param regionLimited true when the provider refuses whole countries. Stated before the
+     *   user spends time on a key, not after — `ANSWERS.md` Part 3 §B, amended 2026-08-03.
+     */
+    data class Guide(
+        val keyUrl: String,
+        val docsUrl: String,
+        val keyPrefix: String,
+        val freeTier: Boolean,
+        val regionLimited: Boolean,
+    )
+
+    fun of(id: ProviderId): Guide = when (id) {
+        // The only one of the four that gives a working key for nothing — and the only one that
+        // refuses entire countries. Both facts are load-bearing for this app's users, and they
+        // pull in opposite directions, so both are said.
+        ProviderId.GEMINI -> Guide(
+            keyUrl = "https://aistudio.google.com/apikey",
+            docsUrl = "https://ai.google.dev/gemini-api/docs/available-regions",
+            keyPrefix = "AIza",
+            freeTier = true,
+            regionLimited = true,
+        )
+
+        // console.anthropic.com now redirects here; the settings path is the stable one.
+        ProviderId.ANTHROPIC -> Guide(
+            keyUrl = "https://platform.claude.com/settings/keys",
+            docsUrl = "https://platform.claude.com/docs/en/about-claude/pricing",
+            keyPrefix = "sk-ant-",
+            freeTier = false,
+            regionLimited = false,
+        )
+
+        ProviderId.OPENAI -> Guide(
+            keyUrl = "https://platform.openai.com/api-keys",
+            docsUrl = "https://developers.openai.com/api/docs/quickstart",
+            keyPrefix = "sk-",
+            freeTier = false,
+            regionLimited = false,
+        )
+
+        ProviderId.DEEPSEEK -> Guide(
+            keyUrl = "https://platform.deepseek.com/api_keys",
+            docsUrl = "https://api-docs.deepseek.com/quick_start/pricing",
+            keyPrefix = "sk-",
+            freeTier = false,
+            regionLimited = false,
+        )
+    }
+}
+===== NEW FILE: ProviderKeyGuide.kt =====
+package com.braining.feature.settings
+
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.braining.core.domain.model.ProviderId
+import com.braining.core.domain.provider.ProviderGuide
+import com.braining.core.ui.text.BidiText
+
+/**
+ * «كيف أحصل على المفتاح؟» — the answer, under the field that asks for it.
+ *
+ * ## The question this removes from the owner's inbox
+ *
+ * The APK goes to friends (`ANSWERS.md` Part 3 §A), and a friend opening Settings meets four
+ * cards each demanding an API key. They do not know what one is, where it lives, which of the
+ * four is free, or why the free one might refuse them. **Every one of them asks the owner**, and
+ * he answers the same four questions by hand, forever.
+ *
+ * ## Collapsed by default, and that is the whole design
+ *
+ * Four expanded help panels would bury the settings they are attached to, and the person who
+ * needs the help reads it **once**. So it costs one line until it is asked for. §10 entry 40 is
+ * the same lesson from the other direction: a screen that shows everything shows nothing.
+ *
+ * ## What it says, and what it refuses to say
+ *
+ * Steps, requirements, the shape of the key, and — for Gemini — the regional refusal, stated
+ * **before** the user spends ten minutes getting a key that will not work for them.
+ *
+ * **No prices and no quota numbers.** A figure compiled into an APK does not become old, it
+ * becomes **wrong**, and wrong about money. Anything carrying a number is one tap away on the
+ * vendor's own page, which is always current by construction. See [ProviderGuide].
+ *
+ * The «copy it now» line is there because all four vendors show a new key exactly once, and the
+ * mistake is unrecoverable in the sense that matters: the user must go back and make another one,
+ * having already closed the only page that could have told them so.
+ */
+@Composable
+fun ProviderKeyGuide(
+    providerId: ProviderId,
+    modifier: Modifier = Modifier,
+) {
+    val guide = ProviderGuide.of(providerId)
+    var expanded by remember(providerId) { mutableStateOf(false) }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        TextButton(
+            onClick = { expanded = !expanded },
+            contentPadding = PaddingValues(0.dp),
+        ) {
+            // The icon shows the CURRENT state's action, and the label follows it. The same rule
+            // the key-visibility eye was corrected to obey in M4.
+            Icon(
+                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            BidiText(
+                text = stringResource(
+                    if (expanded) R.string.key_guide_close else R.string.key_guide_open,
+                ),
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(start = 4.dp),
+            )
+        }
+
+        if (expanded) {
+            Column(
+                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                BidiText(
+                    text = stringResource(stepsFor(providerId)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                BidiText(
+                    text = stringResource(
+                        if (guide.freeTier) R.string.key_guide_free else R.string.key_guide_paid,
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (guide.freeTier) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+
+                // **Said before the key is fetched, not after it fails.** `ANSWERS.md` Part 3 §B as
+                // amended 2026-08-03: the regional refusal must be stated plainly in Arabic. Ten
+                // minutes creating a Google account is a poor way to learn it.
+                if (guide.regionLimited) {
+                    BidiText(
+                        text = stringResource(R.string.key_guide_region),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
+
+                // An Arabic sentence carrying one Latin run (`sk-ant-`). Left to the normal
+                // detection: the bidi algorithm renders an embedded Latin run left-to-right inside
+                // RTL prose on its own, and forcing a direction here would be the thing that broke
+                // it. `forced = Ltr` belongs on a whole line that IS a URL or a JSON body.
+                BidiText(
+                    text = stringResource(R.string.key_guide_prefix, guide.keyPrefix),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                BidiText(
+                    text = stringResource(R.string.key_guide_copy_once),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OpenLinkButton(url = guide.keyUrl, label = R.string.key_guide_button)
+                    OpenLinkButton(url = guide.docsUrl, label = R.string.key_guide_docs)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Opens [url] in whatever browser the phone has.
+ *
+ * `runCatching` around the launch, not because a browser is likely to be missing, but because
+ * `startActivity` throws [ActivityNotFoundException] when it is — and a help button that crashes
+ * the app is a worse outcome than a help button that does nothing. `FLAG_ACTIVITY_NEW_TASK` is
+ * required because the context here may not be an Activity.
+ *
+ * No `<queries>` entry is needed: web intents are exempt from the package-visibility filtering
+ * Android 11 introduced.
+ */
+@Composable
+private fun OpenLinkButton(url: String, label: Int) {
+    val context = LocalContext.current
+    TextButton(
+        onClick = {
+            runCatching {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            }
+        },
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Default.OpenInNew,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+        )
+        BidiText(
+            text = stringResource(label),
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(start = 4.dp),
+        )
+    }
+}
+
+/**
+ * One string per provider rather than one sentence with the name substituted in.
+ *
+ * The places genuinely differ — a studio, a console, a platform, a dashboard — and each names its
+ * button something else. A generic sentence would send a newcomer looking for a control that is
+ * not there, which is the specific failure this whole component exists to prevent.
+ */
+private fun stepsFor(provider: ProviderId): Int = when (provider) {
+    ProviderId.GEMINI -> R.string.key_guide_gemini
+    ProviderId.ANTHROPIC -> R.string.key_guide_anthropic
+    ProviderId.OPENAI -> R.string.key_guide_openai
+    ProviderId.DEEPSEEK -> R.string.key_guide_deepseek
+}
+===== NEW FILE: ProviderGuideTest.kt =====
+package com.braining.core.domain.provider
+
+import com.braining.core.domain.model.ProviderId
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/**
+ * These are cheap, and they exist because the failure they prevent is expensive: a broken link on
+ * a help screen is worse than no help screen, since it costs the user a tap **and** their trust
+ * in the rest of the page.
+ */
+class ProviderGuideTest {
+
+    @Test
+    fun `every provider has a guide`() {
+        // `when` over an enum is exhaustive at compile time, so this cannot fail today. It exists
+        // for the day someone adds OPENROUTER to the enum — M5.2 is exactly that — and the
+        // compiler points at `of` while this test says why it matters.
+        for (id in ProviderId.entries) {
+            val guide = ProviderGuide.of(id)
+            assertTrue("$id has no key URL", guide.keyUrl.isNotBlank())
+            assertTrue("$id has no docs URL", guide.docsUrl.isNotBlank())
+        }
+    }
+
+    @Test
+    fun `every URL is https`() {
+        // A key page reached over http is a key page that can be tampered with in transit, and
+        // this app's whole job on that screen is to be trusted with a credential.
+        for (id in ProviderId.entries) {
+            val guide = ProviderGuide.of(id)
+            assertTrue("$id keyUrl is not https: ${guide.keyUrl}", guide.keyUrl.startsWith("https://"))
+            assertTrue("$id docsUrl is not https: ${guide.docsUrl}", guide.docsUrl.startsWith("https://"))
+        }
+    }
+
+    @Test
+    fun `no URL carries a query string or a fragment`() {
+        // A tracking parameter or a stale anchor is how a link rots without looking rotten.
+        for (id in ProviderId.entries) {
+            val guide = ProviderGuide.of(id)
+            assertFalse("$id keyUrl carries a query: ${guide.keyUrl}", guide.keyUrl.contains('?'))
+            assertFalse("$id keyUrl carries a fragment: ${guide.keyUrl}", guide.keyUrl.contains('#'))
+        }
+    }
+
+    @Test
+    fun `gemini is the free one and the region-limited one`() {
+        // Both halves matter and they pull opposite ways: it is the only provider a friend can
+        // start with for nothing, and the only one that may refuse them outright.
+        val gemini = ProviderGuide.of(ProviderId.GEMINI)
+        assertTrue(gemini.freeTier)
+        assertTrue(gemini.regionLimited)
+    }
+
+    @Test
+    fun `no other provider claims a free tier`() {
+        // The claim that costs real money if it is wrong. Verified against each vendor's own
+        // pricing page on 2026-08-30; a future edit that flips one of these must do the same.
+        for (id in ProviderId.entries - ProviderId.GEMINI) {
+            assertFalse("$id must not claim a free tier", ProviderGuide.of(id).freeTier)
+        }
+    }
+
+    @Test
+    fun `the key prefixes are the ones the vendors actually issue`() {
+        assertEquals("sk-ant-", ProviderGuide.of(ProviderId.ANTHROPIC).keyPrefix)
+        assertEquals("AIza", ProviderGuide.of(ProviderId.GEMINI).keyPrefix)
+    }
+}
+===== feature-settings values/strings.xml (tail) =====
+          https://github.com/USER/REPO/releases/latest/download/app-release.apk
+    -->
+    <string name="share_download_url">https://github.com/Moustafa-Afara/Braining/releases/latest/download/app-release.apk</string>
+    <string name="share_message">جرّب «فهم» — تطبيق يحوّل فكرتك المنطوقة بالعربية إلى نتيجة، بعد أن يستجوبك فيها حتى تنضج.\n\nنزّله من هنا:\n%1$s\n\n(ستحتاج مفتاحاً واحداً مجانياً — التطبيق يشرح لك كيف عند أوّل فتح.)</string>
+    <string name="settings_share_title">شارك التطبيق</string>
+    <string name="settings_share_subtitle">أرسل رابط التنزيل لمن تشاء. الرابط يشير دائماً إلى أحدث نسخة، فلا يتعطّل مع الوقت.</string>
+    <string name="settings_share_action">شارك الرابط</string>
+    <string name="settings_share_not_ready">رابط التنزيل غير صالح. يجب أن ينتهي بـ app-release.apk — راجع share_download_url ثم أعد البناء.</string>
+    <string name="settings_version">النسخة %1$s</string>
+    <!-- ══ M5.3 · «كيف أحصل على المفتاح؟» ══════════════════════════════════════════════
+         سطران لكل مزوّد: ما تحتاجه قبل أن تبدأ، وماذا يشبه المفتاح. بلا أسعار وبلا أرقام
+         حصص — تلك تتغيّر كل بضعة أشهر، ورقم مطبوع داخل نسخة ثبّتها صديق في آب وفتحها في
+         آذار ليس «قديماً» بل **خاطئاً**، وخاطئ في الاتجاه الذي يكلّف مالاً. كل ما يحمل رقماً
+         يُترك لصفحة المزوّد نفسه. -->
+    <string name="key_guide_open">كيف أحصل على المفتاح؟</string>
+    <string name="key_guide_close">إخفاء</string>
+    <string name="key_guide_button">افتح صفحة المفاتيح</string>
+    <string name="key_guide_docs">اقرأ الشروط</string>
+    <string name="key_guide_prefix">المفتاح يبدأ عادةً بـ %1$s</string>
+    <string name="key_guide_free">تكفي حسابك المجاني — بلا بطاقة ائتمان.</string>
+    <string name="key_guide_paid">مدفوع: تحتاج وسيلة دفع في حسابك قبل أوّل طلب.</string>
+    <string name="key_guide_region">⚠ غير متاح في بعض الدول. إن رفضك بسبب موقعك فالمشكلة ليست في مفتاحك — اضغط «اقرأ الشروط» لترى قائمة الدول.</string>
+
+    <string name="key_guide_gemini">أنشئ حساب Google، ثم افتح Google AI Studio واضغط «Create API key». لا تحتاج بطاقة ائتمان.</string>
+    <string name="key_guide_anthropic">أنشئ حساباً في لوحة تحكّم Anthropic، أضف وسيلة دفع، ثم من قسم API Keys اضغط «Create Key».</string>
+    <string name="key_guide_openai">أنشئ حساباً في منصّة OpenAI، أضف وسيلة دفع أو رصيداً، ثم من صفحة API keys اضغط «Create new secret key».</string>
+    <string name="key_guide_deepseek">أنشئ حساباً في منصّة DeepSeek، اشحن رصيداً، ثم من قسم API keys اضغط «Create API key». الأرخص بين الأربعة.</string>
+
+    <string name="key_guide_copy_once">انسخ المفتاح فور ظهوره — كل هذه المواقع تعرضه مرّة واحدة فقط ولا يمكن رؤيته ثانيةً.</string>
+</resources>
+===== feature-settings values-en/strings.xml (tail) =====
+    <string name="settings_share_subtitle">Send the download link to anyone. It always points at the newest version, so it does not go stale.</string>
+    <string name="settings_share_action">Share the link</string>
+    <string name="settings_share_not_ready">The download link is not valid. It must end in app-release.apk — check share_download_url, then rebuild.</string>
+    <string name="settings_version">Version %1$s</string>
+    <!-- M5.3 · the per-provider key guide. No prices, no quota figures: those go stale inside a
+         shipped APK, and a stale figure about money is worse than no figure. -->
+    <string name="key_guide_open">How do I get this key?</string>
+    <string name="key_guide_close">Hide</string>
+    <string name="key_guide_button">Open the keys page</string>
+    <string name="key_guide_docs">Read the terms</string>
+    <string name="key_guide_prefix">The key usually starts with %1$s</string>
+    <string name="key_guide_free">A free account is enough — no credit card.</string>
+    <string name="key_guide_paid">Paid: you need a payment method on the account before the first request.</string>
+    <string name="key_guide_region">⚠ Not available in every country. If it refuses you because of your location, your key is not the problem — tap "Read the terms" for the list.</string>
+
+    <string name="key_guide_gemini">Create a Google account, open Google AI Studio and press "Create API key". No credit card needed.</string>
+    <string name="key_guide_anthropic">Create an account in the Anthropic Console, add a payment method, then press "Create Key" under API Keys.</string>
+    <string name="key_guide_openai">Create an account on the OpenAI platform, add a payment method or credit, then press "Create new secret key" on the API keys page.</string>
+    <string name="key_guide_deepseek">Create an account on the DeepSeek platform, top up a balance, then press "Create API key" under API keys. The cheapest of the four.</string>
+
+    <string name="key_guide_copy_once">Copy the key the moment it appears — all four sites show it once and never again.</string>
+</resources>
