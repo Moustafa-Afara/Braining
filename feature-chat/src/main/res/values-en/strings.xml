@@ -30,6 +30,4 @@
     <string name="chat_fallback_prompt">Pick a provider to answer instead:</string>
     <string name="chat_fallback_any">Try any</string>
     <string name="chat_retry">Try again</string>
-    <!-- Shown when the chips appear without the router's blessing. -->
-    <string name="chat_switch_wont_help">This is a problem with your setup, so switching probably will not help — but you can try:</string>
 </resources>

@@ -161,53 +161,60 @@ fun ChatScreen(
                 // provider name becomes, it can shorten but it can never wrap.
                 title = {
                     var expanded by remember { mutableStateOf(false) }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = stringResource(R.string.chat_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            maxLines = 1,
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        ExposedDropdownMenuBox(
-                            expanded = expanded,
-                            onExpandedChange = { expanded = it },
-                            modifier = Modifier.weight(1f, fill = false),
+                    // **The app's own name is not in this bar, and that is the fix.**
+                    //
+                    // The first attempt moved the provider selector out of `actions` into the
+                    // title and kept the app name beside it. That stopped the two-characters-
+                    // per-line wrapping — and replaced it with truncation at six characters,
+                    // because the title slot was now split between a fixed name and the one
+                    // control that needed the room. **Trading a wrap for an ellipsis is not a
+                    // fix; it is the same shortage wearing different punctuation.**
+                    //
+                    // So the name goes. The user is *inside* the app: its name is on their
+                    // launcher, on the settings screen and on the share card, and none of those
+                    // is a place they are trying to read which brain is answering them. The one
+                    // variable-width control now gets the whole variable width, which is what
+                    // §10 entry 40 was asking for from the start.
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it },
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                                    .padding(vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = uiState.selectedProvider.displayName,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    // The two lines that make the reported bug unreachable.
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f, fill = false),
+                            Text(
+                                text = uiState.selectedProvider.displayName,
+                                style = MaterialTheme.typography.titleMedium,
+                                // Belt and braces: with the whole title slot to itself the name
+                                // fits, and if a future provider is named something absurd it
+                                // shortens rather than wrapping into a column of letters.
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false),
+                            )
+                            // Says "this is a menu". Without it the provider name read as a
+                            // label and the owner had to discover it was tappable.
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                        ) {
+                            ProviderId.entries.forEach { pid ->
+                                DropdownMenuItem(
+                                    text = { Text(pid.displayName, maxLines = 1) },
+                                    onClick = {
+                                        viewModel.selectProvider(pid)
+                                        expanded = false
+                                    },
                                 )
-                                // Says "this is a menu". Without it the provider name read as a
-                                // label, and the owner had to discover it was tappable.
-                                Icon(
-                                    imageVector = Icons.Default.ArrowDropDown,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                )
-                            }
-                            ExposedDropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                            ) {
-                                ProviderId.entries.forEach { pid ->
-                                    DropdownMenuItem(
-                                        text = { Text(pid.displayName, maxLines = 1) },
-                                        onClick = {
-                                            viewModel.selectProvider(pid)
-                                            expanded = false
-                                        },
-                                    )
-                                }
                             }
                         }
                     }
@@ -315,14 +322,14 @@ fun ChatScreen(
                         // fix) while dropping the part that misfired: hiding the buttons.
                         if (uiState.manualOptions.isNotEmpty()) {
                             Spacer(Modifier.height(6.dp))
+                            // One sentence, always the same. The first version hedged —
+                            // "switching probably will not help" — whenever the router declined,
+                            // and the owner disproved it in a single try: no ChatGPT key,
+                            // tapped OpenRouter, got an answer. The caveat was simply false for
+                            // the commonest case, so it is gone. Where switching really is
+                            // futile the **list** is narrowed instead; see `offerFor`.
                             BidiText(
-                                text = stringResource(
-                                    if (uiState.switchNotRecommended) {
-                                        R.string.chat_switch_wont_help
-                                    } else {
-                                        R.string.chat_fallback_prompt
-                                    },
-                                ),
+                                text = stringResource(R.string.chat_fallback_prompt),
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 style = MaterialTheme.typography.labelSmall,
                             )

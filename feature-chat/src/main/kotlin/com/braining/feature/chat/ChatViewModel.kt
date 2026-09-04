@@ -142,11 +142,6 @@ data class ChatUiState(
      */
     val manualOptions: List<ProviderId> = emptyList(),
 
-    /**
-     * True when [manualOptions] is offered without the router's blessing — i.e. the failure is
-     * one another provider probably cannot fix. Drives the honest sentence above the chips.
-     */
-    val switchNotRecommended: Boolean = false,
 )
 
 @HiltViewModel
@@ -325,7 +320,6 @@ class ChatViewModel @Inject constructor(
                 error = null,
                 fallbackOptions = emptyList(),
                 manualOptions = emptyList(),
-                switchNotRecommended = false,
                 tokenUsage = null,
                 lastDiagnostics = null,
             )
@@ -354,7 +348,6 @@ class ChatViewModel @Inject constructor(
                 error = null,
                 fallbackOptions = emptyList(),
                 manualOptions = emptyList(),
-                switchNotRecommended = false,
                 tokenUsage = null,
                 lastDiagnostics = null,
             )
@@ -440,7 +433,6 @@ class ChatViewModel @Inject constructor(
                             error = failure,
                             fallbackOptions = offer.recommended,
                             manualOptions = offer.manual,
-                            switchNotRecommended = offer.notRecommended,
                             lastDiagnostics = diagnosticsSnapshot(null),
                         )
                     }
@@ -500,7 +492,6 @@ class ChatViewModel @Inject constructor(
                                     error = chunk.error,
                                     fallbackOptions = offer.recommended,
                                     manualOptions = offer.manual,
-                                    switchNotRecommended = offer.notRecommended,
                                     lastDiagnostics = diagnostics,
                                 )
                             }
@@ -527,10 +518,7 @@ class ChatViewModel @Inject constructor(
     private data class Offer(
         val recommended: List<ProviderId>,
         val manual: List<ProviderId>,
-    ) {
-        /** The router declined, but there is still someone to ask. */
-        val notRecommended: Boolean get() = recommended.isEmpty() && manual.isNotEmpty()
-    }
+    )
 
     private suspend fun offerFor(failed: ProviderId, error: AiError): Offer {
         val available = keyedProviders()
@@ -540,11 +528,31 @@ class ChatViewModel @Inject constructor(
             keyed = available,
             alreadyTried = triedThisTurn,
         )
+
         // The manual list ignores `alreadyTried` on purpose: a user who has watched two
         // providers fail may still want to send the same question to the first one again, and
         // that is their call, not the router's. It excludes only the one that just failed,
         // because offering it as "someone else" would be a lie.
-        val manual = (available - failed).sortedBy { it.ordinal }
+        //
+        // **`NoNetwork` is the one case where it must be narrower**, and finding that out cost
+        // a wrong sentence. The chips first shipped with a warning above them — "switching
+        // probably will not help" — whenever the router declined. The owner disproved it in one
+        // try: he had no ChatGPT key, the error was `MissingKey`, he tapped OpenRouter, and it
+        // answered. Of course it did. `MissingKey`, `InvalidKey` and `Forbidden` are all faults
+        // in *one provider's* setup, and moving to another provider is exactly the cure.
+        //
+        // The rule that survives is much smaller than the one that was written: switching is
+        // futile only when the **phone** has no connectivity, because every remote provider is
+        // reached over the same dead network. So instead of a sentence hedging about all of
+        // them, the list itself narrows for that one — to the providers that need no internet.
+        // In practice that is Ollama on the user's own Wi-Fi, and it is a real answer: no
+        // internet, but the PC is right there. A caveat replaced by a correct list.
+        val reachable = if (error is AiError.NoNetwork) {
+            available.filter { it == ProviderId.OLLAMA }
+        } else {
+            available.toList()
+        }
+        val manual = (reachable - failed).sortedBy { it.ordinal }
         return Offer(recommended = recommended, manual = manual)
     }
 

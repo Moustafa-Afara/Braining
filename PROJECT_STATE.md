@@ -869,6 +869,28 @@ These are the ones that were paid for more than once. The archive has the incide
     buttons whose contents can grow needs either a wrap, a scroll, or a second row decided in
     advance.
 
+61. **A caveat that is usually false is worse than no caveat.** The always-visible chips first
+    shipped with a warning above them — "this is a problem with your setup, switching probably
+    will not help" — shown whenever the router declined to recommend a hop. The owner disproved
+    it in one attempt: he had no ChatGPT key, tapped OpenRouter, and got an answer. Of course he
+    did. `MissingKey`, `InvalidKey` and `Forbidden` are faults in **one provider's** setup, and
+    moving to another provider is precisely the cure. The sentence was true for exactly one error
+    — `NoNetwork` — and I had generalised it to five.
+    The repair is the shape worth remembering: **where the warning was actually true, narrow the
+    list instead of hedging the label.** With no connectivity the chips now offer only providers
+    that need no internet — in practice the user's own Ollama, which is a real answer rather than
+    a disclaimer. A correct list beats an accurate caveat, and both beat a plausible one.
+
+60. **Trading a wrap for an ellipsis is not a fix; it is the same shortage wearing different
+    punctuation.** Entry 59's repair moved the provider selector into the `title` slot and left
+    the app's name beside it. The two-characters-per-line wrapping stopped — and the names
+    truncated at six characters instead, because the slot was still split between a fixed label
+    and the one control that needed the room. **The measurement never changed; only the failure
+    mode did.** The app name is gone from the chat bar now: the user is inside the app, its name
+    is on their launcher and in Settings, and neither is a place they are trying to read which
+    brain is answering. When a layout is short of width, the answer is to remove a claimant, not
+    to make the loser fail more quietly.
+
 59. **Entry 40 does not stop being true because the Row got one more child.** The provider
     selector sat in `TopAppBar`'s `actions` beside three icon buttons. `actions` is a Row sized
     for icons, and the selector was the only child in it with a variable width — so it absorbed
@@ -1112,6 +1134,16 @@ One line each. Full text in `docs/HISTORY_2026-07_to_08.md`.
 > an interval from any date above that line.
 
 ```
+2026-09-05-B  **Both of the previous entry's fixes were wrong, and the owner caught both by
+              using the app.** The top bar no longer wrapped — it truncated provider names at six
+              characters, because the title slot was still shared with the app's name (§10 entry
+              60). The name is now out of the chat bar entirely and the selector has the whole
+              slot. And the "switching probably will not help" caveat was **false in the
+              commonest case**: he had no ChatGPT key, tapped OpenRouter, and it answered. That
+              sentence held for `NoNetwork` alone and had been generalised to five errors. It is
+              deleted; instead, when the phone genuinely has no connectivity the chip list itself
+              narrows to providers needing no internet — his own Ollama — which is an answer
+              rather than a disclaimer (§10 entry 61).
 2026-09-05-A  **Two defects the owner found by using the app, neither of which a test row would
               have caught.** (1) The provider menu in chat rendered two characters per line: the
               selector was the only variable-width child of `TopAppBar`'s icon-sized `actions`
