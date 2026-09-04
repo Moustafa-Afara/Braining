@@ -37,14 +37,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.FilterChip
@@ -175,22 +172,31 @@ fun ChatScreen(
                     // is a place they are trying to read which brain is answering them. The one
                     // variable-width control now gets the whole variable width, which is what
                     // §10 entry 40 was asking for from the start.
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = it },
-                    ) {
+                    // **A plain `DropdownMenu`, not `ExposedDropdownMenuBox`** — and that is
+                    // the whole of this fix.
+                    //
+                    // `ExposedDropdownMenuBox` constrains its menu to the width of its anchor.
+                    // That is right for the text field it was designed around and wrong here:
+                    // the anchor is the *selected* provider's name, so with DeepSeek chosen the
+                    // menu became DeepSeek-wide and offered «Claude» and «OpenRout». The list
+                    // was being measured against the answer instead of against itself.
+                    //
+                    // A plain `DropdownMenu` in a `Box` sizes to its widest item, which is the
+                    // only width a list of choices can honestly have. It also drops the
+                    // deprecated `MenuAnchorType` on the way out.
+                    Box {
                         Row(
                             modifier = Modifier
-                                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                                .padding(vertical = 8.dp),
+                                .clickable { expanded = true }
+                                .padding(vertical = 8.dp, horizontal = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 text = uiState.selectedProvider.displayName,
                                 style = MaterialTheme.typography.titleMedium,
-                                // Belt and braces: with the whole title slot to itself the name
-                                // fits, and if a future provider is named something absurd it
-                                // shortens rather than wrapping into a column of letters.
+                                // The bar is still finite: a name longer than the space left
+                                // after three action icons shortens rather than wrapping into a
+                                // column of letters. The menu below is unaffected by this.
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f, fill = false),
@@ -203,13 +209,16 @@ fun ChatScreen(
                                 modifier = Modifier.size(24.dp),
                             )
                         }
-                        ExposedDropdownMenu(
+                        DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
                         ) {
                             ProviderId.entries.forEach { pid ->
                                 DropdownMenuItem(
-                                    text = { Text(pid.displayName, maxLines = 1) },
+                                    // No `maxLines` here on purpose: the menu is free to be as
+                                    // wide as its longest provider, and truncating inside it
+                                    // would recreate the bug this replaced.
+                                    text = { Text(pid.displayName) },
                                     onClick = {
                                         viewModel.selectProvider(pid)
                                         expanded = false

@@ -869,6 +869,19 @@ These are the ones that were paid for more than once. The archive has the incide
     buttons whose contents can grow needs either a wrap, a scroll, or a second row decided in
     advance.
 
+62. **A component's convenience is a constraint you inherit, and it is measured against the
+    wrong thing here.** Three attempts at the chat provider selector failed in three different
+    ways, and only the third cause was real: `ExposedDropdownMenuBox` **pins its menu to the
+    width of its anchor.** That is exactly right for the text field it was designed around, and
+    exactly wrong for a top-bar selector whose anchor is the *currently selected* name — so with
+    DeepSeek chosen the menu became DeepSeek-wide and offered «Claude» and «OpenRout». **The
+    list of choices was being measured against the answer instead of against itself.**
+    A plain `DropdownMenu` in a `Box` sizes to its widest item, which is the only width a list of
+    choices can honestly have. The lesson is not about Compose: **when a widget bundles a layout
+    decision with its behaviour, check which of the two you actually wanted** — the first two
+    repairs here fought the symptom (wrapping, then truncation) in a slot whose width was never
+    the problem.
+
 61. **A caveat that is usually false is worse than no caveat.** The always-visible chips first
     shipped with a warning above them — "this is a problem with your setup, switching probably
     will not help" — shown whenever the router declined to recommend a hop. The owner disproved
@@ -1134,6 +1147,14 @@ One line each. Full text in `docs/HISTORY_2026-07_to_08.md`.
 > an interval from any date above that line.
 
 ```
+2026-09-05-C  **Third attempt at the provider selector, and the first at the real cause.**
+              `ExposedDropdownMenuBox` constrains its menu to its anchor's width, so the menu was
+              as wide as whichever provider happened to be selected — «Claude» and «OpenRout»
+              with DeepSeek chosen. Replaced with a plain `DropdownMenu` in a `Box`, which sizes
+              to its widest item; the deprecated `MenuAnchorType` and an already-unused
+              `ExposedDropdownMenuDefaults` import went with it. §10 entry 62.
+              The owner found all three failures by using the app, and each of my first two
+              "fixes" changed the failure mode without touching the cause.
 2026-09-05-B  **Both of the previous entry's fixes were wrong, and the owner caught both by
               using the app.** The top bar no longer wrapped — it truncated provider names at six
               characters, because the title slot was still shared with the app's name (§10 entry
