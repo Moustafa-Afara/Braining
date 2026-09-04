@@ -142,4 +142,14 @@
     <string name="ollama_tunnel_title">أصل إلى حاسوبي عبر Tailscale</string>
     <string name="ollama_tunnel_hint">شغّله لتستعمل حاسوبك من أي مكان، لا من نفس الواي‑فاي فقط. يقبل عندها اسم Tailscale مثل mypc.tail1234.ts.net أو عنواناً يبدأ بـ 100.</string>
     <string name="ollama_hint_tunnel">مثال: mypc.tail1234.ts.net</string>
+    <!-- ══ M5.2 · OpenRouter ══════════════════════════════════════════════════════════ -->
+    <string name="key_guide_openrouter">أنشئ حساباً في openrouter.ai، ثم من قسم Keys اضغط «Create Key». مفتاح واحد يفتح مئات النماذج — وفيها نماذج مجانيّة تعمل بلا أي رصيد.</string>
+    <string name="onboarding_where_openrouter">OpenRouter — مفتاح واحد يكفي لمئات النماذج، وفيها مجانيّة. أسهل بداية إن أردت التجربة بلا بطاقة.</string>
+    <string name="openrouter_browse">تصفّح النماذج</string>
+    <string name="openrouter_loading">جارٍ جلب القائمة…</string>
+    <string name="openrouter_search">ابحث عن نموذج</string>
+    <string name="openrouter_free_badge">مجاني</string>
+    <string name="openrouter_none">لم تصل أي قائمة. تأكّد من المفتاح ومن الاتصال، ثم أعد المحاولة.</string>
+    <string name="openrouter_count">%1$d نموذجاً</string>
+    <string name="openrouter_close">إغلاق</string>
 </resources>

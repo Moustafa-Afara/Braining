@@ -9,6 +9,7 @@ import com.braining.ai.providers.deepseek.DeepSeekProvider
 import com.braining.ai.providers.gemini.GeminiProvider
 import com.braining.ai.providers.ollama.OllamaProvider
 import com.braining.ai.providers.openai.OpenAiProvider
+import com.braining.ai.providers.openrouter.OpenRouterProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,6 +58,20 @@ object ProvidersModule {
     @IntoMap
     @StringKey("OLLAMA")
     fun provideOllama(impl: OllamaProvider): AiProvider = impl
+
+    /**
+     * OpenRouter — the fifth remote provider and the one that reaches the other four's models
+     * without their accounts.
+     *
+     * Settings also injects the **concrete** `OpenRouterProvider`, for `listModels` — which no
+     * other provider has and which `AiProvider` should not grow. That needs no binding here:
+     * `@Singleton @Inject constructor` already makes the class itself injectable, and this
+     * `@IntoMap` entry is only what puts it in the map every screen iterates.
+     */
+    @Provides
+    @IntoMap
+    @StringKey("OPENROUTER")
+    fun provideOpenRouter(impl: OpenRouterProvider): AiProvider = impl
 
     /**
      * The router — **bound here, implemented in `:core-domain`.**

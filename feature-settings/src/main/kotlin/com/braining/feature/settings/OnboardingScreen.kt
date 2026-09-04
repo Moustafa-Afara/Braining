@@ -227,4 +227,5 @@ private fun whereToGetKey(provider: ProviderId): Int = when (provider) {
     ProviderId.OPENAI -> R.string.onboarding_where_openai
     ProviderId.DEEPSEEK -> R.string.onboarding_where_deepseek
     ProviderId.OLLAMA -> R.string.onboarding_where_ollama
+    ProviderId.OPENROUTER -> R.string.onboarding_where_openrouter
 }

@@ -53,5 +53,17 @@ enum class ProviderId(val displayName: String, val defaultModel: String) {
     // An Arabic parenthetical here would have read «Ollama (حاسوبك)» inside every English
     // sentence in the app: the provider menu, the fallback chips, every error. The Arabic
     // belongs in `ollama_title`, which is a string resource and has both locales.
-    OLLAMA("Ollama", "llama3.2")
+    OLLAMA("Ollama", "llama3.2"),
+
+    /**
+     * One key, several hundred models — including the ones the user has no account with.
+     *
+     * **`defaultModel` is a starting point and nothing more, deliberately.** OpenRouter ids are
+     * namespaced and there are hundreds; naming a specific one here would repeat the mistake
+     * that retired `deepseek-chat` out from under three files at once. `openrouter/auto` lets
+     * OpenRouter pick, so a user who has not opened the model picker yet still gets an answer
+     * rather than a 404 — and `verify()` for this provider does not send a completion at all,
+     * so no green tick ever depends on this string being current.
+     */
+    OPENROUTER("OpenRouter", "openrouter/auto")
 }

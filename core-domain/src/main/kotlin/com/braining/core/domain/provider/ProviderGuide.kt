@@ -96,6 +96,17 @@ object ProviderGuide {
             regionLimited = false,
         )
 
+        // The one signup that reaches the other four's models. Its docs page is the pricing
+        // page because that is the question its users actually have: not "how do I call it" but
+        // "what will this model cost me" — and the answer differs per model, hundreds of times.
+        ProviderId.OPENROUTER -> Guide(
+            keyUrl = "https://openrouter.ai/settings/keys",
+            docsUrl = "https://openrouter.ai/models",
+            keyPrefix = "sk-or-",
+            freeTier = true,
+            regionLimited = false,
+        )
+
         ProviderId.DEEPSEEK -> Guide(
             keyUrl = "https://platform.deepseek.com/api_keys",
             docsUrl = "https://api-docs.deepseek.com/quick_start/pricing",

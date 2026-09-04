@@ -230,12 +230,29 @@ fun SettingsScreen(
                     ProviderCard(
                         state = state,
                         developerMode = uiState.developerMode,
+                        // OpenRouter alone gets a browse button: it is the only provider whose
+                        // model list is hundreds long and namespaced, where typing from memory
+                        // is the normal way to fail. The others have one obvious model each.
+                        onBrowseModels = if (pid == ProviderId.OPENROUTER) {
+                            viewModel::browseOpenRouterModels
+                        } else {
+                            null
+                        },
                         onKeyChange = { viewModel.updateApiKey(pid, it) },
                         onToggle = { viewModel.toggleProvider(pid) },
                         onVerify = { viewModel.verifyProvider(pid) },
                         onModelChange = { viewModel.updateModel(pid, it) },
                     )
                 }
+            }
+
+            if (uiState.browsingModels) {
+                ModelBrowser(
+                    models = uiState.openRouterModels,
+                    loading = uiState.loadingModels,
+                    onPick = viewModel::selectOpenRouterModel,
+                    onDismiss = viewModel::closeModelBrowser,
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -568,6 +585,8 @@ private fun ProviderCard(
      */
     developerMode: Boolean = false,
     recommendation: String? = null,
+    /** Non-null only where a model list is worth browsing. See the call site. */
+    onBrowseModels: (() -> Unit)? = null,
     onKeyChange: (String) -> Unit,
     onToggle: () -> Unit,
     onVerify: () -> Unit,
@@ -628,6 +647,15 @@ private fun ProviderCard(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
+
+            // Under the field it fills, and only where there is a list worth browsing. The
+            // field stays editable: someone who knows the id they want should not be made to
+            // scroll for it.
+            onBrowseModels?.let { browse ->
+                TextButton(onClick = browse, enabled = state.apiKey.isNotBlank()) {
+                    Text(stringResource(R.string.openrouter_browse))
+                }
+            }
 
             OutlinedTextField(
                 // Must be bound to real state. A hard-coded "" made this a write-only

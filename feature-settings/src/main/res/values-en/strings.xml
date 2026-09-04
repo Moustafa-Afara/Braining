@@ -107,4 +107,14 @@
     <string name="ollama_tunnel_title">I reach my computer through Tailscale</string>
     <string name="ollama_tunnel_hint">Turn this on to use your computer from anywhere, not only on the same Wi\u2011Fi. It then accepts a Tailscale name such as mypc.tail1234.ts.net, or an address starting with 100.</string>
     <string name="ollama_hint_tunnel">e.g. mypc.tail1234.ts.net</string>
+    <!-- M5.2 · OpenRouter -->
+    <string name="key_guide_openrouter">Create an account at openrouter.ai, then press \"Create Key\" under Keys. One key reaches hundreds of models — including free ones that need no balance.</string>
+    <string name="onboarding_where_openrouter">OpenRouter — one key for hundreds of models, some of them free. The easiest start if you want to try without a card.</string>
+    <string name="openrouter_browse">Browse models</string>
+    <string name="openrouter_loading">Fetching the list\u2026</string>
+    <string name="openrouter_search">Search for a model</string>
+    <string name="openrouter_free_badge">Free</string>
+    <string name="openrouter_none">No list came back. Check the key and your connection, then try again.</string>
+    <string name="openrouter_count">%1$d models</string>
+    <string name="openrouter_close">Close</string>
 </resources>

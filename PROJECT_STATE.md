@@ -74,7 +74,7 @@ core, built first. B (M6) = a PC bridge over Tailscale driving OpenCode headless
 ✅ **M3 Clarify + Forge — CLOSED 2026-08-17** · ✅ **M4 route + translate + feedback — CLOSED
 2026-08-18** · **«مِداد» identity built 2026-08-18 — untested on the phone** ·
 **M5 history + polish — tested on the phone 2026-08-28, four findings fixed the same day
-(M5.1)** · **M5.2 Ollama built 2026-08-31, untested** · **M5.3 key guide** · **OpenRouter ← next** · M6 PC bridge.
+(M5.1)** · **M5.2 Ollama built 2026-08-31, untested** · **M5.3 key guide** · **OpenRouter built 2026-09-04** · **M5 BUILT IN FULL — one test round remains** · M6 PC bridge.
 
 ---
 
@@ -863,6 +863,24 @@ These are the ones that were paid for more than once. The archive has the incide
     buttons whose contents can grow needs either a wrap, a scroll, or a second row decided in
     advance.
 
+57. **A test edited to agree with the code has stopped being a test.** `ProviderGuideTest`
+    asserted "no provider except Gemini claims a free tier" as `entries - GEMINI`. Ollama broke
+    it; the fix was `entries - GEMINI - OLLAMA`. OpenRouter broke it again four days later. Each
+    repair made the assertion weaker and none of them required anyone to *decide* anything — the
+    chain simply grew to match whatever the code now did. Rewritten as an expected **set**, the
+    next provider fails the test loudly and a human has to put it on one side of the line on
+    purpose. **When a test's fix is "add my case to the exclusion list", the test was measuring
+    the code against itself.**
+
+56. **A comment that states the opposite of the truth will be implemented.** `ModelBrowser` held
+    its search text in `remember`, under a comment explaining that keeping it in the ViewModel
+    "would mean a rotation loses the user's typing". It is precisely backwards — `remember` is
+    what a configuration change discards — and the code had been written to satisfy the wrong
+    sentence, so a user who typed into a list of several hundred models lost it by turning the
+    phone. **The comment came first and the bug followed it**, which is the failure mode that
+    makes confident prose in this codebase dangerous rather than merely wrong. Review caught it
+    only by checking the claim rather than reading it.
+
 55. **When a rule must widen, widen it by the shape that is unambiguous — not by the one that is
     convenient.** Reaching Ollama from outside the house needs Tailscale, and Tailscale assigns
     from `100.64/10` — the range entry 52 removed because mobile carriers assign from it too. The
@@ -1066,6 +1084,28 @@ One line each. Full text in `docs/HISTORY_2026-07_to_08.md`.
 > an interval from any date above that line.
 
 ```
+2026-09-04-B  **M5.2 completes — OpenRouter.** One key reaching several hundred models, including
+              **Ox Alpha**, which is why the owner asked for it on 2026-08-28. OpenAI-compatible,
+              so `BaseHttpProvider`'s streaming loop, error classifier and diagnostics panel work
+              unchanged — the third provider in a row that cost almost nothing because that base
+              class was built right.
+              **`verify()` deliberately does NOT send a completion**, breaking with the other
+              four: it lists models instead. A completion would cost money on a model the user
+              has not chosen yet, and the model is picked *afterwards* — from the list that same
+              call returns — so verifying one would be a green tick about a decision not yet
+              made. The tick here means "this key works", the only claim it can honestly make.
+              `ModelCatalog` parses the listing in `:core-domain` rather than in the provider,
+              because `:ai-providers` has no test source set and the parsing is the half that can
+              be got wrong. Eleven tests: a price of "0.0", "0e0" and "-0" all read as free, one
+              side zero does not, an absent price is not evidence of free, and `{"data":[1,2,3]}`
+              returns an empty picker rather than throwing.
+              A searchable browser dialog, because typing one of several hundred namespaced ids
+              from memory is how this provider fails.
+              Review found 4 real defects and 2 false alarms: a cached model list outliving the
+              key it was fetched with, a double fetch when the dialog was closed mid-request, and
+              §10 entries 56 and 57 — a comment that stated the reverse of the truth with the
+              code written to match it, and a test whose every repair had made it weaker.
+              **M5 is now built in full.** What remains is one testing round on the phone.
 2026-09-04-A  **Tunnel mode — Ollama reaches the PC from anywhere.** The owner's report: he can
               only use it on the same Wi-Fi, "and being away from the computer is the whole
               reason I installed it". Correct, and it was the design: `LocalEndpoint` accepts

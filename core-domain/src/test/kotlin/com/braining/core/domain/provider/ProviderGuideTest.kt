@@ -60,18 +60,22 @@ class ProviderGuideTest {
     }
 
     @Test
-    fun `no hosted provider claims a free tier except Gemini`() {
-        // The claim that costs real money if it is wrong. Verified against each vendor's own
-        // pricing page on 2026-08-30; a future edit that flips one of these must do the same.
+    fun `exactly these providers can be used without paying`() {
+        // The claim that costs real money if it is wrong, so it is pinned as a **set** rather
+        // than a subtract-chain. Written as `entries - GEMINI - OLLAMA` it broke the moment
+        // OpenRouter arrived, and the fix was to lengthen the chain — which is a test being
+        // edited to agree with the code instead of checking it. A set makes the next provider
+        // fail here loudly and forces someone to decide, on purpose, which list it joins.
         //
-        // **Ollama is excluded because it is not a vendor.** A model on hardware the user
-        // already owns has no tier to be free of — nobody can bill them for it, which is a
-        // stronger statement than "free tier", not a weaker one.
-        val hosted = ProviderId.entries - ProviderId.GEMINI - ProviderId.OLLAMA
-        for (id in hosted) {
-            assertFalse("$id must not claim a free tier", ProviderGuide.of(id).freeTier)
-        }
-        assertTrue("Ollama costs nothing by construction", ProviderGuide.of(ProviderId.OLLAMA).freeTier)
+        // Verified against each vendor's own documentation:
+        //   GEMINI     — a working key with no payment method at all (2026-08-30)
+        //   OLLAMA     — not a vendor. Hardware the user already owns; nobody can bill them
+        //   OPENROUTER — free models reachable on a key with no balance (2026-09-04)
+        val free = ProviderId.entries.filter { ProviderGuide.of(it).freeTier }.toSet()
+        assertEquals(
+            setOf(ProviderId.GEMINI, ProviderId.OLLAMA, ProviderId.OPENROUTER),
+            free,
+        )
     }
 
     @Test

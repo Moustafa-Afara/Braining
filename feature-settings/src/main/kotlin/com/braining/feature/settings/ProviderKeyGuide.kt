@@ -209,4 +209,5 @@ private fun stepsFor(provider: ProviderId): Int = when (provider) {
     ProviderId.OPENAI -> R.string.key_guide_openai
     ProviderId.DEEPSEEK -> R.string.key_guide_deepseek
     ProviderId.OLLAMA -> R.string.key_guide_ollama
+    ProviderId.OPENROUTER -> R.string.key_guide_openrouter
 }

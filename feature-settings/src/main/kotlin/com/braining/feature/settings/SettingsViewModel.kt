@@ -12,6 +12,8 @@ import com.braining.core.domain.provider.AiProvider
 import com.braining.core.domain.store.AppPreferences
 import com.braining.core.domain.store.EncryptedKeyStore
 import com.braining.ai.providers.ollama.OllamaProvider
+import com.braining.ai.providers.openrouter.OpenRouterProvider
+import com.braining.core.domain.model.RemoteModel
 import com.braining.core.domain.text.ApiKeySanitizer
 import com.braining.core.domain.text.StorageSize
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -61,6 +63,16 @@ data class SettingsUiState(
     /** The user has affirmed a Tailscale tunnel — see `AppPreferences.ollamaTunnel`. */
     val ollamaTunnel: Boolean = false,
 
+    // ── M5.2 · OpenRouter ────────────────────────────────────────────────────────────────
+    /** The models the key can reach. Empty until the user opens the browser. */
+    val openRouterModels: List<RemoteModel> = emptyList(),
+
+    /** The browser dialog is open. */
+    val browsingModels: Boolean = false,
+
+    /** A fetch is in flight, so the dialog can say so rather than look empty. */
+    val loadingModels: Boolean = false,
+
     /**
      * The "about me" note. Read by CLARIFY and FORGE only — `ANSWERS.md` Part 8 §D3.
      *
@@ -95,6 +107,8 @@ class SettingsViewModel @Inject constructor(
      * impossibility onto four classes that would have to answer it with a lie.
      */
     private val ollama: OllamaProvider,
+    /** Concrete, like [ollama], and for the same reason: `listModels` is its alone. */
+    private val openRouter: OpenRouterProvider,
     private val appPreferences: AppPreferences,
     private val providers: Map<String, @JvmSuppressWildcards AiProvider>,
     /** M5. Read for one number: how much disk the history occupies. */
@@ -253,7 +267,17 @@ class SettingsViewModel @Inject constructor(
                         error = null,
                         keyFixes = result.fixes,
                     ))
-                }
+                },
+                // **The cached model list belongs to the key it was fetched with.** Without
+                // this, pasting a second OpenRouter key and pressing Browse returned the first
+                // key's catalogue from cache — and the user picked a model against a key that
+                // may not reach it. Exactly the stale-verdict trap `updateOllamaUrl` clears its
+                // probe result for; the reasoning did not travel with the pattern.
+                openRouterModels = if (providerId == ProviderId.OPENROUTER) {
+                    emptyList()
+                } else {
+                    state.openRouterModels
+                },
             )
         }
 
@@ -478,6 +502,38 @@ class SettingsViewModel @Inject constructor(
         _uiState.update { it.copy(ollamaTunnel = enabled, ollamaProbe = null) }
         viewModelScope.launch { appPreferences.setOllamaTunnel(enabled) }
     }
+
+    /**
+     * Open the model browser, fetching the list if it is not already held.
+     *
+     * **Cached for the life of the screen.** The list is several hundred rows and it does not
+     * change between two taps a minute apart; re-fetching would spend the user's connection to
+     * show them what is already on the device. Re-opening Settings gets a fresh one.
+     */
+    fun browseOpenRouterModels() {
+        val state = _uiState.value
+        if (state.browsingModels) return
+        val key = state.providers[ProviderId.OPENROUTER]?.apiKey.orEmpty()
+        if (key.isBlank()) return
+
+        _uiState.update { it.copy(browsingModels = true) }
+        // `loadingModels` guards re-entry too, not just the cache. Closing the dialog mid-fetch
+        // and reopening it cleared `browsingModels` while the list was still empty, so a second
+        // request launched — two answers landing out of order, and the spinner cleared by
+        // whichever finished first.
+        if (state.openRouterModels.isNotEmpty() || state.loadingModels) return
+
+        _uiState.update { it.copy(loadingModels = true) }
+        viewModelScope.launch {
+            val models = openRouter.listModels(key)
+            _uiState.update { it.copy(openRouterModels = models, loadingModels = false) }
+        }
+    }
+
+    fun closeModelBrowser() = _uiState.update { it.copy(browsingModels = false) }
+
+    /** Take a model the user chose from the browser. */
+    fun selectOpenRouterModel(model: String) = updateModel(ProviderId.OPENROUTER, model)
 
     /** Pick one of the models the machine reported. */
     fun selectOllamaModel(model: String) = updateModel(ProviderId.OLLAMA, model)
