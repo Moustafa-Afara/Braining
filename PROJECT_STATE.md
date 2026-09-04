@@ -869,6 +869,20 @@ These are the ones that were paid for more than once. The archive has the incide
     buttons whose contents can grow needs either a wrap, a scroll, or a second row decided in
     advance.
 
+63. **A guard written with `in` is a substring test, and it will be satisfied by the wrong
+    thing.** The edit that added `DropdownMenu` skipped itself: it checked
+    `if "import …material3.DropdownMenu" in source: continue`, and that string is present — as a
+    **substring of `…material3.DropdownMenuItem`**, which was already imported. The add was
+    silently skipped, the file compiled to nothing locally because nothing here compiles, and the
+    owner's build failed with `Unresolved reference 'DropdownMenu'`.
+    Two fixes, and the second matters more. **Compare whole lines, never substrings, when the
+    thing you are testing for is a line.** And the structural checks now include a
+    *missing-import* pass: they had grown to cover braces, duplicate imports, every `R.string`
+    across modules, format specifiers and AAPT2 escaping — and every one of those passed here.
+    **A checklist only catches what someone was once burned by**, so the day something new gets
+    through is the day the checklist gets a row, not the day it gets an apology. Verified by
+    removing the import again and watching the check report it.
+
 62. **A component's convenience is a constraint you inherit, and it is measured against the
     wrong thing here.** Three attempts at the chat provider selector failed in three different
     ways, and only the third cause was real: `ExposedDropdownMenuBox` **pins its menu to the
@@ -1147,6 +1161,12 @@ One line each. Full text in `docs/HISTORY_2026-07_to_08.md`.
 > an interval from any date above that line.
 
 ```
+2026-09-05-D  **`Unresolved reference 'DropdownMenu'` reached the owner's build.** The import was
+              never added: the insertion guard used `in`, which matched the already-present
+              `DropdownMenuItem` as a substring. Fixed, and the structural checks gained a
+              missing-import pass — a capitalised name called with no import, no same-package
+              declaration and no stdlib match. Proved by deleting the import again and watching
+              it report. §10 entry 63.
 2026-09-05-C  **Third attempt at the provider selector, and the first at the real cause.**
               `ExposedDropdownMenuBox` constrains its menu to its anchor's width, so the menu was
               as wide as whichever provider happened to be selected — «Claude» and «OpenRout»
