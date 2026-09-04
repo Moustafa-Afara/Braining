@@ -49,6 +49,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,9 +61,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.braining.core.domain.model.MessageRole
@@ -214,17 +217,31 @@ fun ChatScreen(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
                         ) {
-                            ProviderId.entries.forEach { pid ->
-                                DropdownMenuItem(
-                                    // No `maxLines` here on purpose: the menu is free to be as
-                                    // wide as its longest provider, and truncating inside it
-                                    // would recreate the bug this replaced.
-                                    text = { Text(pid.displayName) },
-                                    onClick = {
-                                        viewModel.selectProvider(pid)
-                                        expanded = false
-                                    },
-                                )
+                            // **The menu is laid out left-to-right, in an app that is otherwise
+                            // right-to-left.** Every provider name is a Latin brand —
+                            // «Claude (Anthropic)», «OpenRouter», «DeepSeek» — and an RTL layout
+                            // right-aligns them and pushes the parenthesis to the wrong end, so
+                            // a column of them reads as a ragged edge with the names starting at
+                            // six different places. These are identifiers, not prose: their
+                            // direction is a property of the format, which is exactly the case
+                            // `BidiText`'s `forced` parameter documents. Applied to the whole
+                            // menu rather than to each label so the items align with each other,
+                            // which is the thing the eye actually uses to scan a list.
+                            CompositionLocalProvider(
+                                LocalLayoutDirection provides LayoutDirection.Ltr,
+                            ) {
+                                ProviderId.entries.forEach { pid ->
+                                    DropdownMenuItem(
+                                        // No `maxLines` here on purpose: the menu is free to be
+                                        // as wide as its longest provider, and truncating inside
+                                        // it would recreate the bug this replaced.
+                                        text = { Text(pid.displayName) },
+                                        onClick = {
+                                            viewModel.selectProvider(pid)
+                                            expanded = false
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
