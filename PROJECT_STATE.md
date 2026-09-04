@@ -863,6 +863,17 @@ These are the ones that were paid for more than once. The archive has the incide
     buttons whose contents can grow needs either a wrap, a scroll, or a second row decided in
     advance.
 
+55. **When a rule must widen, widen it by the shape that is unambiguous — not by the one that is
+    convenient.** Reaching Ollama from outside the house needs Tailscale, and Tailscale assigns
+    from `100.64/10` — the range entry 52 removed because mobile carriers assign from it too. The
+    obvious move was to put the range back behind a switch. The better one was to notice that
+    Tailscale also issues **names**, under `.ts.net`, a domain nothing else can be reached at.
+    A number in that range cannot say whether it is the user's PC or a stranger's phone; the name
+    can. So tunnel mode accepts the name as its primary spelling and the range only as a fallback,
+    and the app's own hint teaches the name. **The general form: when a permission has to grow,
+    look for an identifier whose meaning is unforgeable before reaching for the one that is
+    merely familiar.**
+
 54. **A workaround that changes where state lives will be used by someone who does not know it
     moved.** A stale `.git/index.lock` blocked every commit, and the agent could not delete files
     on the owner's machine — so it worked around it with `GIT_INDEX_FILE=$HOME/braining.index`,
@@ -1055,6 +1066,20 @@ One line each. Full text in `docs/HISTORY_2026-07_to_08.md`.
 > an interval from any date above that line.
 
 ```
+2026-09-04-A  **Tunnel mode — Ollama reaches the PC from anywhere.** The owner's report: he can
+              only use it on the same Wi-Fi, "and being away from the computer is the whole
+              reason I installed it". Correct, and it was the design: `LocalEndpoint` accepts
+              private addresses only, and a home address means nothing from outside.
+              `LocalEndpoint.parse` gained `allowTunnel`, off by default, fed by a new
+              `ollamaTunnel` preference and a switch on the Ollama card. On, it accepts a
+              **`.ts.net` MagicDNS name** — Tailscale's own domain, which nothing else can be
+              reached at — and, as a fallback, the `100.64/10` range entry 52 removed. What makes
+              that safe is not the address but the WireGuard tunnel, and the switch is therefore
+              an **affirmation by the user**, not a preference: they are stating a tunnel exists.
+              Five tests prove tunnel mode widens the rule by exactly those two shapes and leaves
+              `8.8.8.8`, `1.1.1.1` and every other hostname refused. §10 entry 55.
+              **Port forwarding is not offered and must never be**: Ollama authenticates nobody,
+              so an open port hands a stranger the user's GPU and their prompts.
 2026-08-31-B  **M5.2 — Ollama.** Models on the owner's own PC over the LAN: no key, no quota, no
               bill, and it works with the internet down. Uses Ollama's **OpenAI-compatible**
               `/v1/chat/completions`, so `BaseHttpProvider`'s SSE loop, error classifier and

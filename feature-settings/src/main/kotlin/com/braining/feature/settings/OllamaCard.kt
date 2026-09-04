@@ -15,6 +15,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -65,9 +66,11 @@ fun OllamaCard(
     probe: OllamaProvider.Probe?,
     testing: Boolean,
     selectedModel: String,
+    tunnel: Boolean,
     onUrlChange: (String) -> Unit,
     onTest: () -> Unit,
     onModelSelected: (String) -> Unit,
+    onTunnelChange: (Boolean) -> Unit,
 ) {
     val models = (probe as? OllamaProvider.Probe.Reachable)?.models.orEmpty()
     var menuOpen by remember { mutableStateOf(false) }
@@ -101,10 +104,45 @@ fun OllamaCard(
                 value = url,
                 onValueChange = onUrlChange,
                 label = { Text(stringResource(R.string.ollama_label_address)) },
-                placeholder = { Text(stringResource(R.string.ollama_hint_address)) },
+                placeholder = {
+                    Text(
+                        stringResource(
+                            if (tunnel) R.string.ollama_hint_tunnel else R.string.ollama_hint_address,
+                        ),
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
+
+            // ── the tunnel affirmation ───────────────────────────────────────────────────
+            //
+            // **This is a statement by the user, not a preference.** Off, the app reaches only
+            // the local network — the safe default, and the only one whose safety the app can
+            // verify by itself. On, the user is saying a Tailscale tunnel exists, which is what
+            // makes an address the app cannot vouch for safe to speak plainly to: the packets
+            // are inside WireGuard whatever this app sends.
+            //
+            // The switch is here rather than buried because reaching the PC from outside the
+            // house is the whole reason the owner installed Ollama, and a capability nobody can
+            // find is a capability nobody has (§10 entry 47).
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    BidiText(
+                        text = stringResource(R.string.ollama_tunnel_title),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    BidiText(
+                        text = stringResource(R.string.ollama_tunnel_hint),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = tunnel, onCheckedChange = onTunnelChange)
+            }
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

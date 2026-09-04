@@ -58,6 +58,9 @@ data class SettingsUiState(
     /** True while a test is in flight, so the button can say so and refuse a second tap. */
     val ollamaTesting: Boolean = false,
 
+    /** The user has affirmed a Tailscale tunnel — see `AppPreferences.ollamaTunnel`. */
+    val ollamaTunnel: Boolean = false,
+
     /**
      * The "about me" note. Read by CLARIFY and FORGE only — `ANSWERS.md` Part 8 §D3.
      *
@@ -134,6 +137,12 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             appPreferences.ollamaUrl.collect { url ->
                 _uiState.update { if (it.ollamaUrl == url) it else it.copy(ollamaUrl = url) }
+            }
+        }
+
+        viewModelScope.launch {
+            appPreferences.ollamaTunnel.collect { on ->
+                _uiState.update { it.copy(ollamaTunnel = on) }
             }
         }
 
@@ -456,6 +465,18 @@ class SettingsViewModel @Inject constructor(
 
             if (adopted != null) appPreferences.setSelectedModel(ProviderId.OLLAMA, adopted)
         }
+    }
+
+    /**
+     * Turn the tunnel affirmation on or off.
+     *
+     * Clears the probe result: an address that was refused as public may be accepted now, and
+     * one that was accepted may be refused — either way the old verdict is about a rule that no
+     * longer applies, and a stale green tick is worse than none.
+     */
+    fun setOllamaTunnel(enabled: Boolean) {
+        _uiState.update { it.copy(ollamaTunnel = enabled, ollamaProbe = null) }
+        viewModelScope.launch { appPreferences.setOllamaTunnel(enabled) }
     }
 
     /** Pick one of the models the machine reported. */

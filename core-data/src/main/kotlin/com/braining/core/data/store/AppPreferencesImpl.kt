@@ -75,6 +75,12 @@ class AppPreferencesImpl @Inject constructor(
 
     override val ollamaUrl: Flow<String> = _ollamaUrl.asStateFlow()
 
+    private val _ollamaTunnel = MutableStateFlow(
+        runCatching { prefs.getBoolean(KEY_OLLAMA_TUNNEL, false) }.getOrDefault(false),
+    )
+
+    override val ollamaTunnel: Flow<Boolean> = _ollamaTunnel.asStateFlow()
+
     override suspend fun setDeveloperMode(enabled: Boolean) {
         // State first so the switch in Settings answers immediately; the write follows.
         _developerMode.value = enabled
@@ -134,6 +140,13 @@ class AppPreferencesImpl @Inject constructor(
         }
     }
 
+    override suspend fun setOllamaTunnel(enabled: Boolean) {
+        _ollamaTunnel.value = enabled
+        withContext(Dispatchers.IO) {
+            runCatching { prefs.edit().putBoolean(KEY_OLLAMA_TUNNEL, enabled).apply() }
+        }
+    }
+
     override suspend fun setOllamaUrl(url: String) {
         // Stored verbatim, exactly as typed. `LocalEndpoint` validates on read — normalising
         // here would round-trip a rewritten value back into a field the user is mid-way through
@@ -174,5 +187,6 @@ class AppPreferencesImpl @Inject constructor(
         const val KEY_TTS_ENABLED = "tts_enabled"
         const val KEY_ONBOARDING_DISMISSED = "onboarding_dismissed"
         const val KEY_OLLAMA_URL = "ollama_url"
+        const val KEY_OLLAMA_TUNNEL = "ollama_tunnel"
     }
 }

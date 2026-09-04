@@ -126,6 +126,19 @@ interface AppPreferences {
 
     suspend fun setOllamaUrl(url: String)
 
+    /**
+     * True when the user has said they reach their PC through **Tailscale**, not just Wi-Fi.
+     *
+     * It widens what `LocalEndpoint` will accept — a `.ts.net` name, or an address in the
+     * carrier-NAT range Tailscale assigns from — and it is off by default because that range is
+     * shared with mobile carriers (`ANSWERS.md` Part 16 §P2). **An affirmation, not a
+     * convenience**: the user is stating that a tunnel exists, and the tunnel is what makes
+     * cleartext HTTP safe over an address the app cannot otherwise vouch for.
+     */
+    val ollamaTunnel: Flow<Boolean>
+
+    suspend fun setOllamaTunnel(enabled: Boolean)
+
     companion object {
         /**
          * The cap on the note, in characters. Here rather than in the store or the screen

@@ -216,9 +216,11 @@ fun SettingsScreen(
                 probe = uiState.ollamaProbe,
                 testing = uiState.ollamaTesting,
                 selectedModel = uiState.providers[ProviderId.OLLAMA]?.selectedModel.orEmpty(),
+                tunnel = uiState.ollamaTunnel,
                 onUrlChange = viewModel::updateOllamaUrl,
                 onTest = viewModel::testOllama,
                 onModelSelected = viewModel::selectOllamaModel,
+                onTunnelChange = viewModel::setOllamaTunnel,
             )
 
             // Other providers

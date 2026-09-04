@@ -91,8 +91,10 @@ class OllamaProvider @Inject constructor(
 
     override val requiresKey = false
 
-    override suspend fun resolveBaseUrl(): String? =
-        LocalEndpoint.baseUrlOrNull(appPreferences.ollamaUrl.first())
+    override suspend fun resolveBaseUrl(): String? = LocalEndpoint.baseUrlOrNull(
+        appPreferences.ollamaUrl.first(),
+        allowTunnel = appPreferences.ollamaTunnel.first(),
+    )
 
     /** No auth, by design. See the class note. */
     override fun buildAuthHeaders(apiKey: String): Map<String, String> = emptyMap()
@@ -189,7 +191,7 @@ class OllamaProvider @Inject constructor(
      */
     suspend fun probe(timeoutMillis: Long = TEST_BUTTON_TIMEOUT_MS): Probe {
         val raw = appPreferences.ollamaUrl.first()
-        val parsed = LocalEndpoint.parse(raw)
+        val parsed = LocalEndpoint.parse(raw, allowTunnel = appPreferences.ollamaTunnel.first())
         if (parsed is LocalEndpoint.Result.Empty) return Probe.NotConfigured
         val base = (parsed as? LocalEndpoint.Result.Ok)?.url ?: return Probe.BadAddress(parsed)
 

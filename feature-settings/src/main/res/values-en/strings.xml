@@ -99,8 +99,12 @@
     <string name="ollama_ok_empty">Connected, but no models are downloaded. On the computer run: ollama pull llama3.2</string>
     <string name="ollama_not_configured">Type your computer\'s address first.</string>
     <string name="ollama_bad_address">That is not a valid address. Use an IP such as 192.168.1.5 — not a name and not a URL.</string>
-    <string name="ollama_not_private">%1$s is not on your local network, and the app will not send your ideas to a public address unencrypted. Use the computer\'s address inside your network (usually starts with 192.168 or 10.).</string>
+    <string name="ollama_not_private">%1$s is not on your local network, and the app will not send your ideas to a public address unencrypted. Use an address inside your network (usually 192.168 or 10.) — or turn on \"I reach my computer through Tailscale\" above if you use a tunnel.</string>
     <string name="ollama_unreachable">No answer. The three causes, in order: the computer is asleep or off · Ollama is only listening to itself (set OLLAMA_HOST=0.0.0.0 and restart it) · Windows Firewall is blocking port 11434.</string>
     <string name="key_guide_ollama">No key and no account. Install Ollama on your computer, pull a model, and type the computer\'s address in the Ollama card above.</string>
     <string name="onboarding_where_ollama">Ollama — no key and no cost, but it needs a computer to run on. Set it up later in Settings.</string>
+    <!-- The tunnel affirmation: a statement by the user, not a preference. -->
+    <string name="ollama_tunnel_title">I reach my computer through Tailscale</string>
+    <string name="ollama_tunnel_hint">Turn this on to use your computer from anywhere, not only on the same Wi\u2011Fi. It then accepts a Tailscale name such as mypc.tail1234.ts.net, or an address starting with 100.</string>
+    <string name="ollama_hint_tunnel">e.g. mypc.tail1234.ts.net</string>
 </resources>

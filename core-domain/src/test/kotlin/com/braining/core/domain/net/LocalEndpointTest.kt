@@ -188,6 +188,64 @@ class LocalEndpointTest {
         assertTrue(LocalEndpoint.parse("010.0.0.1") is LocalEndpoint.Result.Malformed)
     }
 
+    // ── tunnel mode ─────────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `a tailscale name is refused by default and accepted in tunnel mode`() {
+        // **Off is the safe default and the only state the app can verify by itself.** On, the
+        // user has affirmed a WireGuard tunnel exists, and that — not the address — is what
+        // makes cleartext safe here.
+        assertTrue(LocalEndpoint.parse("mypc.tail1234.ts.net") is LocalEndpoint.Result.Malformed)
+        val ok = LocalEndpoint.parse("mypc.tail1234.ts.net", allowTunnel = true)
+        assertEquals("http://mypc.tail1234.ts.net:11434", (ok as LocalEndpoint.Result.Ok).url)
+    }
+
+    @Test
+    fun `a lookalike of the tailscale domain is refused even in tunnel mode`() {
+        // The suffix must be exactly `.ts.net` with a real label in front. These are the shapes
+        // an attacker would register, and the reason the check is a suffix match on a label
+        // boundary rather than a `contains`.
+        for (host in listOf("ts.net", "evil-ts.net", "ts.net.evil.com", "mypc.ts.net.evil.com")) {
+            assertTrue(
+                "$host must be refused",
+                LocalEndpoint.parse(host, allowTunnel = true) !is LocalEndpoint.Result.Ok,
+            )
+        }
+    }
+
+    @Test
+    fun `carrier NAT opens only in tunnel mode`() {
+        // 100.64/10 is Tailscale's range AND every mobile carrier's. Off, it stays refused —
+        // §10 entry 52. On, the traffic is inside WireGuard whatever the address means.
+        assertTrue(LocalEndpoint.parse("100.100.1.1") is LocalEndpoint.Result.NotPrivate)
+        assertTrue(LocalEndpoint.parse("100.100.1.1", allowTunnel = true) is LocalEndpoint.Result.Ok)
+        // The boundaries still hold inside tunnel mode.
+        assertTrue(LocalEndpoint.parse("100.63.1.1", allowTunnel = true) is LocalEndpoint.Result.NotPrivate)
+        assertTrue(LocalEndpoint.parse("100.128.1.1", allowTunnel = true) is LocalEndpoint.Result.NotPrivate)
+    }
+
+    @Test
+    fun `tunnel mode does not open the public internet`() {
+        // The whole point: it widens the rule by exactly two shapes and nothing else.
+        for (host in listOf("8.8.8.8", "1.1.1.1", "203.0.113.5", "evil.example.com")) {
+            assertTrue(
+                "$host must stay refused in tunnel mode",
+                LocalEndpoint.parse(host, allowTunnel = true) !is LocalEndpoint.Result.Ok,
+            )
+        }
+        assertTrue(
+            LocalEndpoint.parse("[2001:4860:4860::8888]", allowTunnel = true)
+                !is LocalEndpoint.Result.Ok,
+        )
+    }
+
+    @Test
+    fun `the local network still works with tunnel mode on`() {
+        // Turning it on must not cost the user their Wi-Fi setup.
+        assertTrue(LocalEndpoint.parse("192.168.1.5", allowTunnel = true) is LocalEndpoint.Result.Ok)
+        assertTrue(LocalEndpoint.parse("10.2.0.2", allowTunnel = true) is LocalEndpoint.Result.Ok)
+    }
+
     @Test
     fun `baseUrlOrNull is null for everything that is not Ok`() {
         assertNull(LocalEndpoint.baseUrlOrNull(""))
