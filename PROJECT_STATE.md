@@ -660,6 +660,12 @@ lessons were paid for by plans that had quietly been made unnecessary or already
 - ~~**The fallback chooser exists only in Clarify.**~~ **Closed 2026-08-30** — chat has it, and
   so do Clarify's interrogation and forge phases, which never had it either. Neither was ever on
   the queue: §10 entries 47 and 49 are about why a queue built by remembering misses these.
+- **Clarify's chooser is still router-gated.** §10 entry 58 was applied to chat, where the
+  owner met it. The same "silence expresses a judgement badly" problem exists in Clarify, and it
+  is deliberately not fixed in the same batch: Clarify's chooser is phase-aware across four
+  provider calls, and the last careless change there was the one that would have deleted a whole
+  interrogation (§10 entry 50). Recorded so it is a decision and not the oversight entry 47 is
+  about.
 - **Ollama's model name is only adopted in Settings.** `testOllama()` replaces a placeholder
   model with a real one from the machine; the fallback path does not. A user who reaches Ollama
   purely through a fallback chip could send a model name their machine does not have.
@@ -862,6 +868,28 @@ These are the ones that were paid for more than once. The archive has the incide
     The redesign did not create the fault; it removed the slack that was hiding it. Any row of
     buttons whose contents can grow needs either a wrap, a scroll, or a second row decided in
     advance.
+
+59. **Entry 40 does not stop being true because the Row got one more child.** The provider
+    selector sat in `TopAppBar`'s `actions` beside three icon buttons. `actions` is a Row sized
+    for icons, and the selector was the only child in it with a variable width — so it absorbed
+    every pixel the icons needed and rendered as **two characters per line**. Adding Ollama and
+    OpenRouter to the menu did not create the bug; it made a latent one visible. Moved to the
+    `title` slot, which is the one the app bar gives leftover width to, plus `maxLines = 1` and
+    an ellipsis so the failure is now unreachable rather than merely unlikely. **A layout that
+    was fine at four items and broke at six was never fine — it was untested at six.**
+
+58. **A control that appears only under conditions the user cannot predict is, from their side,
+    absent.** The owner reported the fallback chooser as missing from chat. It was not missing:
+    it had been there since 30 August and had simply never appeared for him, because
+    `isRecoverable` refuses to offer a hop for a missing key, a rejected key, a dead network or
+    an unclassified failure — and those were the failures he happened to hit. Two sessions were
+    spent building it and he never saw it once.
+    **The fix was not to weaken the rule but to stop hiding the control.** The chips now show
+    whenever anyone else could be asked, and where the router declined, the card *says so in a
+    sentence* — "this is a problem with your setup, switching probably will not help, but you
+    can try". That keeps the 28 August ruling's actual reasoning (do not hide what the user must
+    fix) and drops the part that misfired: hiding the buttons was itself a way of hiding it.
+    **Silence is not a neutral way to express a judgement.** It is indistinguishable from a bug.
 
 57. **A test edited to agree with the code has stopped being a test.** `ProviderGuideTest`
     asserted "no provider except Gemini claims a free tier" as `entries - GEMINI`. Ollama broke
@@ -1084,6 +1112,21 @@ One line each. Full text in `docs/HISTORY_2026-07_to_08.md`.
 > an interval from any date above that line.
 
 ```
+2026-09-05-A  **Two defects the owner found by using the app, neither of which a test row would
+              have caught.** (1) The provider menu in chat rendered two characters per line: the
+              selector was the only variable-width child of `TopAppBar`'s icon-sized `actions`
+              Row — §10 entries 40 and 59. Moved to `title`, `maxLines = 1`, ellipsis. (2) He
+              reported the fallback chooser as **missing from chat**; it had been there since 30
+              August and had never once appeared for him, because every failure he met was one
+              the router declines to route around. §10 entry 58: the chips now appear whenever
+              another provider could be asked, and the card states plainly when a switch is not
+              expected to help rather than silently withholding the buttons. `ChatViewModel`
+              gained `manualOptions` and `switchNotRecommended`; `offerFor` computes both in one
+              pass so the key store and the Ollama probe are read once, not twice, while the user
+              waits in front of an error card.
+              **«جرّب أي واحد» stays gated on the router's list**: that button is the app
+              choosing, and the app only chooses where it has a reason to believe the choice
+              helps. The chips are the user choosing, and those are always there.
 2026-09-04-B  **M5.2 completes — OpenRouter.** One key reaching several hundred models, including
               **Ox Alpha**, which is why the owner asked for it on 2026-08-28. OpenAI-compatible,
               so `BaseHttpProvider`'s streaming loop, error classifier and diagnostics panel work

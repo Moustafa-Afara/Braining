@@ -124,6 +124,29 @@ data class ChatUiState(
      * nothing. §10 entry 47.
      */
     val fallbackOptions: List<ProviderId> = emptyList(),
+
+    /**
+     * Everyone else who could be asked — **whether or not the router recommends it.**
+     *
+     * [fallbackOptions] is the router's recommendation and it is empty for a missing key, a
+     * rejected key, a dead network or an unclassified failure. That rule is right: those are the
+     * user's own setup, and quietly routing around them hides the thing they have to fix.
+     *
+     * But on 2026-09-04 the owner reported the chooser as **missing from chat**. It was not
+     * missing; it had never appeared for him, because the failures he happened to hit were all
+     * ones the router declines to route around. **A control that appears only under conditions
+     * the user cannot predict is, from their side, absent** — and the fix is not to weaken the
+     * rule but to stop hiding the control. So this list is always populated, the card always
+     * offers a switch, and when the router did not recommend it the card **says so in a
+     * sentence** instead of silently omitting the buttons. §10 entry 58.
+     */
+    val manualOptions: List<ProviderId> = emptyList(),
+
+    /**
+     * True when [manualOptions] is offered without the router's blessing — i.e. the failure is
+     * one another provider probably cannot fix. Drives the honest sentence above the chips.
+     */
+    val switchNotRecommended: Boolean = false,
 )
 
 @HiltViewModel
@@ -301,6 +324,8 @@ class ChatViewModel @Inject constructor(
                 inputText = "",
                 error = null,
                 fallbackOptions = emptyList(),
+                manualOptions = emptyList(),
+                switchNotRecommended = false,
                 tokenUsage = null,
                 lastDiagnostics = null,
             )
@@ -328,6 +353,8 @@ class ChatViewModel @Inject constructor(
                 isGenerating = true,
                 error = null,
                 fallbackOptions = emptyList(),
+                manualOptions = emptyList(),
+                switchNotRecommended = false,
                 tokenUsage = null,
                 lastDiagnostics = null,
             )
@@ -401,7 +428,7 @@ class ChatViewModel @Inject constructor(
                     // propagate rather than phrasing them itself — so this is where they are
                     // classified into typed AiErrors (NoNetwork, Timeout, Unknown).
                     val failure = throwable.toAiError(providerId)
-                    val options = fallbackOptionsFor(providerId, failure)
+                    val offer = offerFor(providerId, failure)
                     _uiState.update { state ->
                         val msgs = state.messages.toMutableList()
                         if (assistantIndex < msgs.size && msgs[assistantIndex].isStreaming) {
@@ -411,7 +438,9 @@ class ChatViewModel @Inject constructor(
                             messages = msgs,
                             isGenerating = false,
                             error = failure,
-                            fallbackOptions = options,
+                            fallbackOptions = offer.recommended,
+                            manualOptions = offer.manual,
+                            switchNotRecommended = offer.notRecommended,
                             lastDiagnostics = diagnosticsSnapshot(null),
                         )
                     }
@@ -457,9 +486,9 @@ class ChatViewModel @Inject constructor(
 
                         is AiChunk.Error -> {
                             val diagnostics = diagnosticsSnapshot(null)
-                            // Computed OUTSIDE `update`: it reads the key store, and `update`
-                            // takes a lambda that may be re-run on contention.
-                            val options = fallbackOptionsFor(providerId, chunk.error)
+                            // Computed OUTSIDE `update`: it reads the key store and probes the
+                            // user's PC, and `update` takes a lambda that may be re-run.
+                            val offer = offerFor(providerId, chunk.error)
                             _uiState.update { state ->
                                 val msgs = state.messages.toMutableList()
                                 if (assistantIndex < msgs.size) {
@@ -469,7 +498,9 @@ class ChatViewModel @Inject constructor(
                                     messages = msgs,
                                     isGenerating = false,
                                     error = chunk.error,
-                                    fallbackOptions = options,
+                                    fallbackOptions = offer.recommended,
+                                    manualOptions = offer.manual,
+                                    switchNotRecommended = offer.notRecommended,
                                     lastDiagnostics = diagnostics,
                                 )
                             }
@@ -486,13 +517,36 @@ class ChatViewModel @Inject constructor(
      * offering one would trade this failure for a worse one (the next error would name a missing
      * key and read as if the user had misconfigured something).
      */
-    private suspend fun fallbackOptionsFor(failed: ProviderId, error: AiError): List<ProviderId> =
-        router.fallbackCandidates(
+    /**
+     * What the failure card should offer: the router's recommendation, and the full list.
+     *
+     * **Computed together, in one pass**, because both answers need the same expensive input —
+     * the key store plus a probe of the user's PC. Asking twice would double a wait the user is
+     * already spending in front of an error card, and would let the two answers disagree.
+     */
+    private data class Offer(
+        val recommended: List<ProviderId>,
+        val manual: List<ProviderId>,
+    ) {
+        /** The router declined, but there is still someone to ask. */
+        val notRecommended: Boolean get() = recommended.isEmpty() && manual.isNotEmpty()
+    }
+
+    private suspend fun offerFor(failed: ProviderId, error: AiError): Offer {
+        val available = keyedProviders()
+        val recommended = router.fallbackCandidates(
             failed = failed,
             error = error,
-            keyed = keyedProviders(),
+            keyed = available,
             alreadyTried = triedThisTurn,
         )
+        // The manual list ignores `alreadyTried` on purpose: a user who has watched two
+        // providers fail may still want to send the same question to the first one again, and
+        // that is their call, not the router's. It excludes only the one that just failed,
+        // because offering it as "someone else" would be a lie.
+        val manual = (available - failed).sortedBy { it.ordinal }
+        return Offer(recommended = recommended, manual = manual)
+    }
 
     /**
      * The providers that could answer, right now.

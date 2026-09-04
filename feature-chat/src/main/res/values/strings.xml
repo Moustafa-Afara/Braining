@@ -58,4 +58,7 @@
     <string name="chat_fallback_prompt">اختر مزوّداً يُجيب بدلاً عنه:</string>
     <string name="chat_fallback_any">جرّب أي واحد</string>
     <string name="chat_retry">أعد المحاولة</string>
+    <!-- يظهر حين يعرض التطبيق أزرار المزوّدين رغم أن التبديل لن يفيد — لأن إخفاء الأزرار
+         جعل المالك يظنّ أن الميزة غير موجودة أصلاً (٤ أيلول ٢٠٢٦). نقول السبب ولا نخفي الزرّ. -->
+    <string name="chat_switch_wont_help">هذا العطل في إعدادك، والتبديل غالباً لن يفيد — لكن جرّب إن شئت:</string>
 </resources>

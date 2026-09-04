@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
@@ -62,6 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -143,35 +145,74 @@ fun ChatScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.chat_title)) },
-                actions = {
+                // **The provider selector lives in the title, not in `actions`.**
+                //
+                // It used to sit beside the three icon buttons, and on 2026-09-04 the owner
+                // reported the provider list rendering "two joined letters per line". That is
+                // §10 entry 40 exactly — *a `Row` does not wrap, it compresses, and the last
+                // child pays.* `actions` is a Row sized for icons; the one child in it with a
+                // variable width was this text, so it absorbed every pixel the icons needed and
+                // was squeezed to about two characters wide. Adding OpenRouter and Ollama to
+                // the menu made a latent problem visible rather than creating it.
+                //
+                // The title slot is the one the app bar gives the leftover width to, which is
+                // what a variable-width control needs. `maxLines = 1` with an ellipsis makes
+                // the failure impossible rather than merely unlikely: whatever the widest
+                // provider name becomes, it can shorten but it can never wrap.
+                title = {
                     var expanded by remember { mutableStateOf(false) }
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = it },
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = uiState.selectedProvider.displayName,
-                            modifier = Modifier
-                                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                                .padding(8.dp),
-                            style = MaterialTheme.typography.labelMedium,
+                            text = stringResource(R.string.chat_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
                         )
-                        ExposedDropdownMenu(
+                        Spacer(modifier = Modifier.width(12.dp))
+                        ExposedDropdownMenuBox(
                             expanded = expanded,
-                            onDismissRequest = { expanded = false },
+                            onExpandedChange = { expanded = it },
+                            modifier = Modifier.weight(1f, fill = false),
                         ) {
-                            ProviderId.entries.forEach { pid ->
-                                DropdownMenuItem(
-                                    text = { Text(pid.displayName) },
-                                    onClick = {
-                                        viewModel.selectProvider(pid)
-                                        expanded = false
-                                    },
+                            Row(
+                                modifier = Modifier
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = uiState.selectedProvider.displayName,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    // The two lines that make the reported bug unreachable.
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false),
                                 )
+                                // Says "this is a menu". Without it the provider name read as a
+                                // label, and the owner had to discover it was tappable.
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                            ) {
+                                ProviderId.entries.forEach { pid ->
+                                    DropdownMenuItem(
+                                        text = { Text(pid.displayName, maxLines = 1) },
+                                        onClick = {
+                                            viewModel.selectProvider(pid)
+                                            expanded = false
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
+                },
+                actions = {
                     // History before Settings: it is the one a user reaches for repeatedly,
                     // and the rightmost positions in an RTL app bar are the hardest to reach
                     // with a thumb.
@@ -260,19 +301,37 @@ fun ChatScreen(
                         // are all refused by `DefaultModelRouter.isRecoverable`. Then only
                         // «أعد المحاولة» remains, which is the honest offer for a problem another
                         // provider cannot solve.
-                        if (uiState.fallbackOptions.isNotEmpty()) {
+                        // **The chips are shown whenever anyone else could be asked** — not
+                        // only when the router recommends it. On 2026-09-04 the owner reported
+                        // this chooser as missing from chat. It was not missing; it had simply
+                        // never appeared for him, because every failure he happened to hit was
+                        // one the router declines to route around. A control that appears only
+                        // under conditions the user cannot predict is, from their side, absent.
+                        //
+                        // The router's judgement is not discarded — it is **said out loud**.
+                        // When it declined, the line above the chips explains that the fault is
+                        // in his own setup and another provider will meet the same thing. That
+                        // keeps the 28 August ruling's reasoning (do not hide what the user must
+                        // fix) while dropping the part that misfired: hiding the buttons.
+                        if (uiState.manualOptions.isNotEmpty()) {
                             Spacer(Modifier.height(6.dp))
                             BidiText(
-                                text = stringResource(R.string.chat_fallback_prompt),
+                                text = stringResource(
+                                    if (uiState.switchNotRecommended) {
+                                        R.string.chat_switch_wont_help
+                                    } else {
+                                        R.string.chat_fallback_prompt
+                                    },
+                                ),
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 style = MaterialTheme.typography.labelSmall,
                             )
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                items(uiState.fallbackOptions) { pid ->
+                                items(uiState.manualOptions) { pid ->
                                     FilterChip(
                                         selected = false,
                                         onClick = { viewModel.chooseFallback(pid) },
-                                        label = { Text(pid.displayName) },
+                                        label = { Text(pid.displayName, maxLines = 1) },
                                     )
                                 }
                             }
@@ -286,8 +345,10 @@ fun ChatScreen(
                                 Text(stringResource(R.string.chat_retry))
                             }
                             // One tap for a user who does not care which provider answers, only
-                            // that one does. It takes the head of the same list the chips are
-                            // built from, so it can never choose something they were not offered.
+                            // that one does. Gated on the **router's** list, not the manual one:
+                            // "try any" is the app choosing, and the app only chooses where it
+                            // has a reason to believe the choice will help. Where it does not,
+                            // the chips are still there and the user picks.
                             if (uiState.fallbackOptions.isNotEmpty()) {
                                 TextButton(onClick = { viewModel.tryAnyFallback() }) {
                                     Text(stringResource(R.string.chat_fallback_any))
