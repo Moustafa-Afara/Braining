@@ -17,4 +17,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.navigation.compose)
+
+    // M6 — `FileProvider` (androidx.core.content) backs the export share sheet. Declared
+    // explicitly rather than leaned on transitively: androidx.core does arrive through
+    // activity-compose today, but a compile classpath that depends on someone else's POM scope is
+    // a build that breaks on an unrelated upgrade.
+    implementation(libs.androidx.core.ktx)
 }

@@ -68,4 +68,8 @@
     <string name="copy_part">Copy this part</string>
     <!-- Ollama has no key to be missing; its address has not been set. -->
     <string name="error_ollama_no_address">Set your computer\'s address in Settings first — Ollama needs no key.</string>
+    <!-- M6 — export a model answer as a Markdown file. -->
+    <string name="export_share">Share as file</string>
+    <string name="export_save">Save as file</string>
+    <string name="export_chooser_title">Share file</string>
 </resources>

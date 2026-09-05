@@ -701,7 +701,7 @@ cd C:\Dev\Braining
 
 ---
 
-### Next — M6: file generation & sharing  ·  spec: `docs/M6_FILE_GENERATION.md`
+### ⏳ M6 BUILT 2026-09-05, UNTESTED  ·  spec: `docs/M6_FILE_GENERATION.md`
 
 **The owner reprioritised on 2026-09-05.** The next milestone is no longer the PC bridge; it is
 letting the models produce files the user can download and share over social apps, in both chat and
@@ -877,11 +877,23 @@ the tooling) · `Kotlin does not yet support 25 JDK target, falling back to JVM_
 
 ---
 
-## 10. Lessons that bind — distilled from 60 entries
+## 10. Lessons that bind — distilled from 61 entries
 
 These are the ones that were paid for more than once. The archive has the incidents.
 
 **On diagnosis**
+
+67. **Two `adb` binaries of different versions on one machine will corrupt an install, and the
+    error will not mention adb.** `installDebug` failed with `EOFException` inside
+    `SyncService.doPushFile` — which reads as a broken cable. It was not. This SDK holds
+    **three** adb executables at two versions: `platform-tools\adb.exe` is 31.0.2 and both
+    `platform-tools-2\adb.exe` and `Sdk\adb.exe` are 37.0.1. adb kills and restarts the server
+    whenever a client of a different version connects, so a 31.0.2 client (the one on PATH, which
+    *this session ran*) starting a server that AGP's 37.0.1 client then killed **mid-push** is
+    exactly an EOF. Anything automated that touches this machine must call
+    `platform-tools-2\adb.exe` by full path. The SDK layout itself is left alone — Gradle already
+    warns that the `platform-tools` package id sits in an inconsistent location, and hard
+    constraint 5 forbids the Quickfix that would "solve" it.
 
 66. **An empty screen is not a state; it is the absence of a report.** `start?.let { }` meant
     that until one asynchronous read returned, the entire app was a background-coloured

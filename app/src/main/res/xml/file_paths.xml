@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The ONLY directory Braining exposes through FileProvider.
+
+    Scoped to `cache/exports/` and nothing else, deliberately. A `<root-path>` or an
+    `<external-path>` here would make far more of the app reachable to whatever the user shares
+    with, for no gain: M6 writes every export into this one folder.
+-->
+<paths>
+    <cache-path name="exports" path="exports/" />
+</paths>

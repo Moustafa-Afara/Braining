@@ -59,5 +59,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!--
+            M6 — hands an exported Markdown file to the share sheet as a `content://` URI.
+
+            `exported="false"` with `grantUriPermissions="true"` is the pair that matters: no other
+            app may query this provider, and the receiving app gets read access to exactly the one
+            URI it was handed, for as long as that one Intent lives. `file_paths.xml` limits it to
+            `cache/exports/`.
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

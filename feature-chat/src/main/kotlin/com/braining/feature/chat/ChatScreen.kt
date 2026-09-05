@@ -26,11 +26,13 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -59,6 +61,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.braining.core.ui.diagnostics.Diag
+import com.braining.core.ui.export.FileExporter
+import com.braining.core.ui.export.rememberFileExporter
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -118,6 +122,11 @@ fun ChatScreen(
     // thread is blocked elsewhere (native, GPU, a deadlock) the counter simply stops. Either
     // answer ends the guessing. `remember` so the counter is not itself a state read that could
     // provoke the very loop it is measuring.
+    // M6 — one exporter for the whole screen, not one per bubble. A LazyColumn disposes and
+    // recreates its items as they scroll, and an activity-result launcher registered inside an
+    // item would register and unregister on every pass. Hoisted here it is created once.
+    val exporter = rememberFileExporter(stringResource(com.braining.core.ui.R.string.export_chooser_title))
+
     val recomposeTick = remember { intArrayOf(0) }
     SideEffect {
         recomposeTick[0]++
@@ -517,6 +526,7 @@ fun ChatScreen(
                         message = message,
                         showDiagnostics = uiState.developerMode,
                         onEdit = { viewModel.editMessage(index) },
+                        exporter = exporter,
                     )
                 }
                 item { Spacer(modifier = Modifier.height(8.dp)) }
@@ -638,6 +648,8 @@ private fun MessageBubble(
     message: ChatMessageUi,
     showDiagnostics: Boolean,
     onEdit: (() -> Unit)? = null,
+    /** M6. Null in previews and anywhere export does not apply. */
+    exporter: FileExporter? = null,
 ) {
     val isUser = message.role == MessageRole.USER
     val alignment = if (isUser) Alignment.CenterEnd else Alignment.CenterStart
@@ -691,6 +703,40 @@ private fun MessageBubble(
                                 contentDescription = stringResource(R.string.chat_action_copy),
                                 modifier = Modifier.size(14.dp),
                             )
+                        }
+                        // M6 — export the answer as a Markdown file: share it, or save it
+                        // where the user chooses. Only on the model's messages; exporting your own
+                        // question as a document is not a thing anyone asked for.
+                        //
+                        // Two plain buttons rather than one button opening a menu, deliberately:
+                        // the provider menu is the control currently under investigation for the
+                        // black screen, and adding a second popup to the same screen while that is
+                        // open would be a poor trade for one saved pixel.
+                        if (!isUser && exporter != null) {
+                            TextButton(
+                                onClick = { exporter.share(message.content) },
+                                contentPadding = PaddingValues(horizontal = 8.dp),
+                            ) {
+                                Icon(
+                                    Icons.Default.Share,
+                                    contentDescription = stringResource(
+                                        com.braining.core.ui.R.string.export_share,
+                                    ),
+                                    modifier = Modifier.size(14.dp),
+                                )
+                            }
+                            TextButton(
+                                onClick = { exporter.save(message.content) },
+                                contentPadding = PaddingValues(horizontal = 8.dp),
+                            ) {
+                                Icon(
+                                    Icons.Default.Download,
+                                    contentDescription = stringResource(
+                                        com.braining.core.ui.R.string.export_save,
+                                    ),
+                                    modifier = Modifier.size(14.dp),
+                                )
+                            }
                         }
                         if (isUser && onEdit != null) {
                             TextButton(

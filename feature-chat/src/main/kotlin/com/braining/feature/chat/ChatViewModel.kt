@@ -14,6 +14,7 @@ import com.braining.core.domain.model.SttError
 import com.braining.core.domain.model.TokenUsage
 import com.braining.core.domain.provider.AiProvider
 import com.braining.ai.providers.ProviderAvailability
+import com.braining.core.domain.text.FileRequestDetector
 import com.braining.core.domain.routing.ModelRouter
 import com.braining.core.domain.speech.SpeechToText
 import com.braining.core.domain.speech.TranscriptionEvent
@@ -86,6 +87,18 @@ data class VoiceUiState(
      */
     val engineAvailable: Boolean = false,
 )
+
+/**
+ * The single system line M6 adds when the user asks for something file-shaped.
+ *
+ * English regardless of the user's language, and it says so itself: the instruction is addressed to
+ * the model, and the last clause keeps it from leaking into the answer or changing what language
+ * the user is answered in.
+ */
+private const val MARKDOWN_INSTRUCTION =
+    "Answer in clean, self-contained Markdown. Begin with a single '# ' title line. " +
+        "Use headings, lists, tables and fenced code blocks where they help. " +
+        "Reply in the same language the user wrote in, and do not mention this instruction."
 
 data class ChatUiState(
     val messages: List<ChatMessageUi> = emptyList(),
@@ -372,12 +385,27 @@ class ChatViewModel @Inject constructor(
             ChatMessage(role = it.role, content = it.content)
         }
 
+        // **M6 — the one instruction to the model, and the only one chat ever sends.**
+        //
+        // §8 records that plain chat sends no system prompt, because "an instrument that
+        // accumulates state measures something different every time it is used." That rule is
+        // about *accumulated* state, and this is not that: it is a pure function of the message
+        // being sent right now, decided by `FileRequestDetector` and gone again the moment the
+        // user asks something that is not file-shaped. Ask the same question twice and the same
+        // bytes go out both times, which is the property the rule exists to protect.
+        val lastUserText = aiMessages.lastOrNull { it.role == MessageRole.USER }?.content.orEmpty()
+        val outgoing = if (FileRequestDetector.isFileShaped(lastUserText)) {
+            listOf(ChatMessage(role = MessageRole.SYSTEM, content = MARKDOWN_INSTRUCTION)) + aiMessages
+        } else {
+            aiMessages
+        }
+
         val developerMode = _uiState.value.developerMode
         val request = AiRequest(
             // `resolveModel(providerId)`, not `selectedModel` — a fallback to Claude must not
             // send Gemini's model name. They are the same value on the normal path.
             model = resolveModel(providerId),
-            messages = aiMessages,
+            messages = outgoing,
             stream = true,
             diagnostics = developerMode,
         )

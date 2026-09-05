@@ -124,4 +124,8 @@
          user to look for an API key field would be this app reproducing by hand the mistake
          §10 entry 1 is about. -->
     <string name="error_ollama_no_address">اكتب عنوان حاسوبك في الإعدادات أوّلاً — Ollama لا يحتاج مفتاحاً.</string>
+    <!-- M6 — export a model answer as a Markdown file. -->
+    <string name="export_share">مشاركة كملف</string>
+    <string name="export_save">حفظ كملف</string>
+    <string name="export_chooser_title">مشاركة الملف</string>
 </resources>

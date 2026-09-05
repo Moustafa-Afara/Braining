@@ -33,6 +33,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -79,6 +81,7 @@ import com.braining.core.ui.components.PrimaryButton
 import com.braining.core.ui.components.QuietButton
 import com.braining.core.ui.components.TonalButton
 import com.braining.core.ui.diagnostics.DiagnosticsPanel
+import com.braining.core.ui.export.rememberFileExporter
 import com.braining.core.ui.error.toUserMessage
 import com.braining.core.ui.input.submitOnCtrlEnter
 import com.braining.core.ui.routing.toUserMessage
@@ -874,6 +877,29 @@ private fun ForgePanel(
                 }
                 if (uiState.result.isNotBlank()) {
                     CopyButton(uiState.result, "R", R.string.clarify_copy_result)
+                    // M6 — the forged result is the one thing in this screen a user wants to keep
+                    // and send on, so it gets the same export pair as a chat answer.
+                    val exporter = rememberFileExporter(
+                        stringResource(com.braining.core.ui.R.string.export_chooser_title),
+                    )
+                    TextButton(onClick = { exporter.share(uiState.result) }) {
+                        Icon(
+                            Icons.Default.Share,
+                            contentDescription = stringResource(
+                                com.braining.core.ui.R.string.export_share,
+                            ),
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                    TextButton(onClick = { exporter.save(uiState.result) }) {
+                        Icon(
+                            Icons.Default.Download,
+                            contentDescription = stringResource(
+                                com.braining.core.ui.R.string.export_save,
+                            ),
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
                 }
             }
             BidiText(

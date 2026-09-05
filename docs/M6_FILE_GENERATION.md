@@ -1,7 +1,9 @@
 # M6 — File generation & sharing
 
-**Status:** specified 2026-09-05, not started. Blocked behind the black screen (§8) only in
-sequence, not in code — nothing here touches `ChatScreen`'s top bar or the start-up path.
+**Status: BUILT 2026-09-05, untested on the phone.** The owner answered the five decisions below
+with «امشِ بتوصياتك» — go with your recommendations — so every recommended default was taken. It
+touches neither `ChatScreen`'s top bar nor the start-up path, so it is independent of the black
+screen.
 
 **Owner instruction that defines this milestone (2026-09-05):** the models used in the app should
 be able to *generate files* in **both** normal chat and Clarify (interrogation) mode, and the user
@@ -66,10 +68,10 @@ A single `FileExport` helper — chat and Clarify are siblings, so anything both
    stripped, whitespace collapsed, length-capped), Arabic kept, timestamp fallback when the text
    has no usable first line.
 
-## 5. What the owner must decide before the batch starts
+## 5. The decisions — all answered 2026-09-05 with the recommended default
 
-Nothing to **install** — no new SDK, no account, no key. The decisions are all product choices, and
-each has a recommended default so silence is a safe answer:
+Nothing to **install** — no new SDK, no account, no key. Every item below is **decided and built**
+as the recommended option:
 
 1. **Format for v1:** Markdown only *(recommended)*, or also plain `.txt`? PDF/Word → §6, later.
 2. **Download behaviour:** system "Save to…" picker *(recommended — no permission, any location)*,
@@ -79,6 +81,27 @@ each has a recommended default so silence is a safe answer:
 4. **Model nudge:** add the one Markdown system-prompt line when the request is file-shaped
    *(recommended yes)* — in chat only, or Clarify too?
 5. **Filename:** derive from the title *(recommended)*, always timestamp, or ask every time?
+
+### What that turned into, in code
+
+- `core-ui/export/FileExport.kt` — writes UTF-8 into `cache/exports/`, sanitises the filename from
+  the first `#` heading (Arabic kept), and exposes `share()` / `save()` through
+  `rememberFileExporter()`. Share uses `text/plain` and "Save to…" uses `text/markdown`: chat apps
+  filter the share sheet by MIME and several show **no** targets for `text/markdown`, while the
+  document picker uses it to name the file `.md`. The file is identical either way.
+- `app/AndroidManifest.xml` + `res/xml/file_paths.xml` — a `FileProvider`, `exported="false"`,
+  `grantUriPermissions="true"`, scoped to `cache/exports/` and nothing else.
+- `core-domain/text/FileRequestDetector.kt` **+ nine unit tests** — decides when the request is
+  file-shaped. Latin matches on word boundaries (`profile` must not count as `file`); Arabic matches
+  the stem as a substring, because Arabic attaches its article and suffixes to it. That asymmetry is
+  the thing the tests exist to hold in place.
+- `ChatViewModel` — prepends one `SYSTEM` line when, and only when, the detector fires.
+- `ChatScreen` / `ClarifyScreen` — a share and a save button beside the existing copy button. **Two
+  plain buttons, not one button opening a menu**: the provider dropdown is the control currently
+  under investigation for the black screen, and a second popup on the same screen was a poor trade
+  for one saved pixel.
+- `core-ui/build.gradle.kts` — `androidx.core.ktx` declared explicitly for `FileProvider` rather
+  than leaned on transitively.
 
 ## 6. Deliberately deferred (so nobody reads it as missed)
 
@@ -110,6 +133,8 @@ each has a recommended default so silence is a safe answer:
    truncation, structure preserved.
 6. The exported file contains no API key and no request JSON — open it and read it.
 7. A title with slashes/emoji/newlines produces a safe filename and still saves.
+8. `.\gradlew.bat :core-domain:test` passes — nine `FileRequestDetector` rows, including
+   «profile» not counting as «file». This one needs no phone and can be run first.
 
 Seven rows, one surface. If any needs the app rebuilt more than once, the batch was split wrong.
 
