@@ -56,6 +56,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,6 +67,7 @@ import com.braining.core.ui.export.rememberFileExporter
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -137,6 +139,24 @@ fun ChatScreen(
         )
     }
 
+    // TEMPORARY, 2026-09-05 — the second half of the same question, added after the first capture
+    // ruled out both a recomposition storm and an exception. It is now established that when the
+    // screen is black the app has *composed* (this screen's recompose line prints) and the theme
+    // Surface has *painted* (the screenshot is exactly `#0E0D14`), yet the view tree is empty. So
+    // the gap is between composition and layout, and neither existing probe can see it.
+    //
+    // `onGloballyPositioned` reports the size this screen was actually laid out at, logged only
+    // when it changes so it cannot spam. A `0x0` here, or this line never printing after a
+    // `nav -> chat`, names the fault outright.
+    val lastSize = remember { intArrayOf(-1, -1) }
+
+    // And whether the screen is still in the composition at all. If it leaves without a `nav ->`
+    // line following, then nothing replaced it, and *that* is the black screen.
+    DisposableEffect(Unit) {
+        Diag.log("ChatScreen ENTER composition")
+        onDispose { Diag.log("ChatScreen LEAVE composition") }
+    }
+
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
             listState.animateScrollToItem(uiState.messages.size - 1)
@@ -173,6 +193,15 @@ fun ChatScreen(
     }
 
     Scaffold(
+        modifier = Modifier.onGloballyPositioned { coords ->
+            val w = coords.size.width
+            val h = coords.size.height
+            if (w != lastSize[0] || h != lastSize[1]) {
+                lastSize[0] = w
+                lastSize[1] = h
+                Diag.log("ChatScreen laid out ${w}x${h}")
+            }
+        },
         topBar = {
             TopAppBar(
                 // **The provider selector lives in the title, not in `actions`.**

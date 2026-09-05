@@ -562,7 +562,49 @@ moves**.
 
 ## 8. Next step
 
-### ⛔ THE BLACK SCREEN — STILL OPEN. First fix addressed a DIFFERENT bug. (2026-09-05 evening)
+### ⛔ THE BLACK SCREEN — captured, narrowed, and now known to be INTERMITTENT (2026-09-05, late)
+
+**The app logs now, and the black state was caught in the act.** What that ruled out, with evidence
+rather than argument:
+
+- **Not a recomposition storm.** The `SideEffect` counter printed `#1`, `#2`, `#3` — single digits.
+  A pegged main thread would have flooded.
+- **Not an exception.** No `UNCAUGHT` line, no `AndroidRuntime`, nothing in the crash buffer.
+- **Not the `MainActivity` start gate** that the morning's fix addressed. That path now renders a
+  spinner; the black screen shows no spinner.
+- **The window is healthy.** `mCurrentFocus` is MainActivity's own window, `mHasSurface=true`,
+  `isReadyForDisplay()=true`, full 1220×2712. No popup holds focus.
+- **The screen is painted, and empty.** A screenshot is uniformly `#0E0D14` —
+  `BrandPalette.Ink.Ground`, the exact colour `Surface(color = background)` paints. `uiautomator`
+  returns a *real* hierarchy for `com.braining.app` containing a full-screen `FrameLayout` and
+  essentially no content nodes.
+
+So: **theme and `Surface` compose and paint, `ChatScreen` composes (its recompose line prints), and
+then nothing is laid out.** The fault sits between composition and layout — which is precisely the
+gap neither existing probe can see, hence the two added below.
+
+**It is INTERMITTENT, and that corrects the record.** It was reported as happening every time. Six
+cycles of Settings → back → open menu → switch provider were driven over adb, and the `BRAINING`
+log shows an event sequence **identical** to the owner's own failing run — same navigations, same
+recompose counts, same provider switches — with no black screen. The path is confirmed; the trigger
+is not on it. Nobody should "fix" this from a theory again: six clean passes is what a theory would
+have predicted anyway.
+
+**Two probes added for the next build**, aimed exactly at the remaining gap: `onGloballyPositioned`
+on the Scaffold logs the size the screen is actually laid out at (logged only when it changes), and
+a `DisposableEffect` logs `ENTER`/`LEAVE` of the composition. A `0x0`, a missing layout line after a
+`nav -> chat`, or a `LEAVE` with nothing following names the fault outright.
+
+**Two capture problems were fixed, and they explain the earlier dead ends.** The Xiaomi sensor spam
+evicts our lines from the default ring buffer within minutes — a capture taken a few minutes late is
+empty and looks like silence. The buffer is now `logcat -G 16M`, and a continuous capture runs to
+`log_black.txt` (git-ignored) so the next occurrence cannot be lost.
+
+**Tooling note worth keeping:** this session can drive the phone directly —
+`platform-tools-2\adb.exe` for everything (lesson 67), `uiautomator dump` to locate controls by
+bounds, `input tap` to operate them, `screencap` for ground truth. That is how the above was
+established without the owner tapping anything.
+
 
 **Read this before touching anything: the confident section that used to be here was wrong, in the
 exact way §10 entry 1 keeps being paid for.** The morning's logs showed activity recreation

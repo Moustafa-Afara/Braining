@@ -48,3 +48,6 @@ build-log*.txt
 # happened to be logging at the time - never a thing to commit.
 log*.txt
 crash*.txt
+
+# Debug screenshots pulled from the phone. Never part of the project.
+/screen*.png
