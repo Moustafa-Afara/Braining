@@ -562,32 +562,57 @@ moves**.
 
 ## 8. Next step
 
-### ⛔ OPEN AND UNEXPLAINED — the black screen, 2026-09-04
+### ◐ THE BLACK SCREEN — mechanism found 2026-09-05, fix written, one link still open
 
-Reproducible on the owner's phone, twice, on the build at `86564dc`: open Settings, press back to
-chat, open the provider menu → **the screen goes black and responds to nothing.** Not "the app
-disappears" (that would be a crash) and not "black with a working back button" (that would be a
-draw fault). The owner was asked those three alternatives by name and answered
-«أسود لا يستجيب لشيء».
+Reproducible on the owner's phone: open Settings, press back, open the provider menu → the
+screen goes black and answers nothing. He was asked to choose between three failures by name and
+chose «أسود لا يستجيب لشيء» — not the app disappearing, not black with a working back button.
 
-**No cause is assigned here, and none may be assigned until a log names one.** The first capture
-(`crash.txt`, 302 lines) contained **zero** lines from `com.braining`: 280 of them were
-`libsensor-displayalgo`, the Xiaomi screen-sensor tag, because `-t 300` on this device covers
-about two seconds. The evidence is not in hand.
+**What two logcat captures prove, in order.**
 
-Read this together with §10 entry 1 and entries 59/60/62. Three consecutive "fixes" to this same
-top bar each changed the shape of the failure without touching its cause, and every one of them
-cost the owner a build. **A fourth guess costs a fourth build.** The rule for whoever picks this
-up: no edit to `ChatScreen.kt`, `NavGraph.kt` or the Settings return path until a log line names
-the fault. Two facts already checked and both negative — they narrow nothing, they only close
-doors: there is no `runBlocking`, `Thread.sleep` or other blocking call anywhere in `app/`,
-`feature-chat/`, `feature-settings/`, `feature-clarify/` or `core-ui/`, and Settings is an
-ordinary Compose Navigation destination in a single-Activity graph, not a second Activity.
+1. **Not a crash and not an ANR.** The events buffer records every one of both regardless of
+   whether a dialog is shown, and holds zero `am_crash` and zero `am_anr` for this package. No
+   `FATAL EXCEPTION` anywhere. All twelve process deaths in the log are `SwipeUpClean` /
+   `OneKeyClean` — the owner killing it himself.
+2. **MIUI changes the window configuration on its own account.** Ten
+   `configuration_changed: 536872064` = `0x20000500` =
+   WINDOW_CONFIGURATION | SCREEN_SIZE | SCREEN_LAYOUT in one evening, **six of them while
+   Braining was not running.** This is the phone, not the app.
+3. **`MainActivity` declares no `android:configChanges`**, so Android destroys and recreates it
+   on each one. Six `wm_relaunch_resume_activity` → `onPause` → `onStop` → `onDestroy` →
+   `onCreate` cycles for this activity, masks `480` and `2004`. Three separate processes show
+   `wm_on_create_called` **three times each**.
+4. **The recreations come in pairs, and every pair is followed by the owner killing the app.**
+   01:33 + 01:36 → killed 01:46. 01:52:12 + 01:52:16 (four seconds apart) → killed 01:56.
+   02:23:54 + 02:25:26 → killed 02:27. Three for three.
+5. **On recreation the app rendered nothing.** `setContent` re-ran, `produceState` restarted from
+   `null`, and `start?.let { }` meant the entire tree was `Surface(color = background)` and
+   nothing else — no graph, no chat, no top bar. `BrandPalette.Ink.Ground` is `#0E0D14`.
+   **A black screen, alive, focused, taking touches, drawing nothing.**
+6. **The last capture shows precisely that.** Final app log line 03:03:52.504; touches at
+   03:03:53.122 and 03:03:53.854 delivered to `a6b7dc7 com.braining.app/.MainActivity` — the
+   app's own window, not a stray popup — with no reaction to either; then 57 seconds of silence.
+   Choreographer stops complaining too, because nothing asked for a frame.
 
-Requested from the owner: `adb logcat -d -b crash -b events` (small, survives an app restart, and
-he has already reproduced the fault twice, so it may already hold the answer), and if that is
-empty, `adb logcat -c` → reproduce → recapture with the sensor tags filtered out.
+**The link that is NOT proven** is why the gap lasted instead of flashing. `getAllKeys()` is
+`withContext(Dispatchers.IO)` and should return in milliseconds. That question is now moot rather
+than answered, and saying so is the honest description of the fix.
 
+**The fix (`MainActivity.kt`, 2026-09-05).** Three changes, each defensible on its own:
+`rememberSaveable` so the decision survives recreation and the gap can happen at most once per
+process; `withTimeoutOrNull(2 s)` on both reads, landing on CHAT, so it can never wait forever;
+and a spinner instead of an empty `Surface`, so **rendering nothing is no longer a legal state**
+— the reason four hours went into telling a crash, an ANR and a draw fault apart is that an empty
+screen looks identical to a dead app.
+
+**Second, independent defect, measured not inferred.** `Choreographer: Skipped 47–104 frames` and
+`PerfMonitor doFrame time=388–856 ms` — twelve times in twenty seconds, once per interaction.
+Every tap in this app blocks the main thread for four tenths of a second or more. Untouched here;
+it is queued in §9 and needs its own investigation, not a guess.
+
+**Free test that would confirm the trigger, no build required:** with the app open, rotate the
+phone, or switch the phone between dark and light mode. If the screen goes black, the trigger is
+the recreation and nothing to do with Settings or the menu at all.
 
 ### ✓ THE RELEASE BUILD IS PROVEN — 2026-08-30
 
@@ -794,11 +819,34 @@ the tooling) · `Kotlin does not yet support 25 JDK target, falling back to JVM_
 
 ---
 
-## 10. Lessons that bind — distilled from 57 entries
+## 10. Lessons that bind — distilled from 60 entries
 
 These are the ones that were paid for more than once. The archive has the incidents.
 
 **On diagnosis**
+
+66. **An empty screen is not a state; it is the absence of a report.** `start?.let { }` meant
+    that until one asynchronous read returned, the entire app was a background-coloured
+    `Surface`. It cost four hours and three log captures to establish that a black rectangle was
+    not a crash, not an ANR and not a draw fault — because a screen that renders nothing looks
+    exactly like a process that has died. Any branch that can render nothing must render
+    *something*: a spinner, a message, one word. The rule is not cosmetic. It is what makes the
+    difference between a bug report and an archaeology dig.
+
+65. **Ask what the platform did to your app, not only what your app did.** Ten
+    `configuration_changed` events in one evening's log — six of them while Braining was not even
+    running — recreate an activity that declares no `configChanges`, and every recreation runs
+    `setContent` from scratch. The fault was reported as "Settings, back, open the menu" and had
+    nothing to do with any of those three. **The reproduction steps a user gives are what they
+    noticed, not what happened.** The events buffer (`adb logcat -b events`) is small, survives
+    an app restart, and answers "was it killed / recreated / ANR'd" in one grep; reach for it
+    before the main buffer.
+
+64. **An app that logs nothing cannot be debugged from a log.** Three captures were requested and
+    two were useless before anyone noticed that `com.braining` contains zero calls to
+    `android.util.Log` — every line about it in 160,000 lines of logcat was written *by the
+    system, about it, from outside.* The system can say the process is alive and focused; it can
+    never say which screen the app thinks it is showing.
 
 1. **A platform error code names the symptom the platform saw, not the cause.**
    `ERROR_LANGUAGE_UNAVAILABLE` became "Arabic is not installed" and sent the owner to three

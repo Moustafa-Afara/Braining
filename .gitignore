@@ -43,3 +43,8 @@ build-log*.txt
 
 # Scratch produced by a review pass. Not part of the project.
 .m5*-*.diff
+
+# Device logs pulled during debugging. Large, and they carry whatever the phone
+# happened to be logging at the time - never a thing to commit.
+log*.txt
+crash*.txt
