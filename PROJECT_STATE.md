@@ -28,6 +28,11 @@ Clarify result.
    both devices. Nothing needs installing; four product decisions are listed at the end of that doc.
 2. **M8 — field diagnostics** → `docs/M8_FIELD_DIAGNOSTICS.md`. Phase 1 (the `Diag` tag and the
    uncaught-exception handler) already shipped. The rest is specified with a build order.
+3. **Then the launch program, L1 → L9** → `docs/launch/00_LAUNCH_PLAN.md`. Nine briefs in the
+   owner's binding order: support & testing regime, security audit, user guide + video, legal &
+   ownership, Google Play (+ an honest Apple assessment), website, the Arabic technical narrative,
+   marketing & agent-run support, and the Version-2 proposal. **Three owner rulings are pending**
+   before L1 starts — `ANSWERS.md` Part 21 lists them. L1's testing regime may begin at once.
 
 **Two things that must not be lost:**
 
@@ -702,6 +707,14 @@ what is deferred (PDF/Word) are in the design note.
 below is now **M7**. Confirm that is right — or whether Tailscale's remote *model* access has
 already met the original "use my PC from outside the house" goal, leaving only *running tasks on
 the PC* as the thing M7 is still for.
+
+### After M8 — the launch program L1 → L9  ·  `docs/launch/00_LAUNCH_PLAN.md`
+
+Dictated by the owner on 2026-09-05, order binding. Each phase has its own brief written for an agent
+who has never seen the project. Preconditions M7 + M8, except L1's testing regime which starts now.
+Three rulings pending (`ANSWERS.md` Part 21): remote access to users' phones (recommended **no** —
+M8 reports + a user-initiated support session instead), Apple (the app is Android-only; iOS is a
+separate build), and public-source-available vs private repository.
 
 ### Then M7 — the PC bridge (Path B)  ·  earlier notes called this M6
 
