@@ -562,6 +562,33 @@ moves**.
 
 ## 8. Next step
 
+### ⛔ OPEN AND UNEXPLAINED — the black screen, 2026-09-04
+
+Reproducible on the owner's phone, twice, on the build at `86564dc`: open Settings, press back to
+chat, open the provider menu → **the screen goes black and responds to nothing.** Not "the app
+disappears" (that would be a crash) and not "black with a working back button" (that would be a
+draw fault). The owner was asked those three alternatives by name and answered
+«أسود لا يستجيب لشيء».
+
+**No cause is assigned here, and none may be assigned until a log names one.** The first capture
+(`crash.txt`, 302 lines) contained **zero** lines from `com.braining`: 280 of them were
+`libsensor-displayalgo`, the Xiaomi screen-sensor tag, because `-t 300` on this device covers
+about two seconds. The evidence is not in hand.
+
+Read this together with §10 entry 1 and entries 59/60/62. Three consecutive "fixes" to this same
+top bar each changed the shape of the failure without touching its cause, and every one of them
+cost the owner a build. **A fourth guess costs a fourth build.** The rule for whoever picks this
+up: no edit to `ChatScreen.kt`, `NavGraph.kt` or the Settings return path until a log line names
+the fault. Two facts already checked and both negative — they narrow nothing, they only close
+doors: there is no `runBlocking`, `Thread.sleep` or other blocking call anywhere in `app/`,
+`feature-chat/`, `feature-settings/`, `feature-clarify/` or `core-ui/`, and Settings is an
+ordinary Compose Navigation destination in a single-Activity graph, not a second Activity.
+
+Requested from the owner: `adb logcat -d -b crash -b events` (small, survives an app restart, and
+he has already reproduced the fault twice, so it may already hold the answer), and if that is
+empty, `adb logcat -c` → reproduce → recapture with the sensor tags filtered out.
+
+
 ### ✓ THE RELEASE BUILD IS PROVEN — 2026-08-30
 
 `assembleRelease` completed. The APK was signed (v2/v3), installed, and audited on the real
