@@ -52,9 +52,23 @@ JVM build into a project whose Gradle setup is already the most fragile thing in
 2. **Approval gate before any destructive action** — delete, bulk edit, or system command. The
    bridge classifies the *proposed* action, pauses, and pushes the question to the phone. Nothing
    destructive runs on a timeout or a default-yes.
-3. **Working-directory confinement.** One owner-approved folder. Every path is resolved to its real
-   absolute form and rejected if it escapes the root — symlinks and `..` included, which is exactly
-   how confinement is usually lost.
+3. **Working-directory confinement — widened to the whole disk on 2026-09-05, with a deny-list.**
+   The owner answered "كل المجلدات حرفياً". `BRAINING.md` §7 allows exactly this ("unless explicitly
+   widened"), so the grant is legitimate and is recorded in `ANSWERS.md` Part 20 §M7-1. **It is not
+   executed bare.** A hard deny-list stays, read *and* write, and it exists to protect rulings the
+   owner already made, not to overrule this one:
+   - `braining-release.jks`, `keystore.properties*` — hard constraint 9. Losing or leaking the
+     signing key means the app can never be updated on anyone's phone again.
+   - `C:\Users\ASUS\.local\share\opencode\auth.json` — nine providers' API keys in clear text.
+     An agent that can read it can leak them, which is hard constraint 3 (BYOK) broken from the
+     inside.
+   - `.ssh`, `.gnupg` and equivalent credential stores.
+   - `C:\Windows`, `Program Files` — writing there needs admin anyway and breaks the machine, not
+     the project.
+
+   Everything else is readable and writable. Path resolution still happens: every path is resolved to
+   its real absolute form, and `..` and symlinks are evaluated **before** the deny-list is applied —
+   a deny-list checked against the string the caller supplied is not a deny-list.
 
 ## 4. Security — the same standard as `LocalEndpoint`, and for the same reason
 
@@ -107,14 +121,24 @@ already a plan was carried out that the code had quietly made unnecessary):
 7. The audit log on the PC contains all of the above, in order.
 8. Killing Tailscale mid-task fails safely — no half-applied change without a report.
 
-## 8. What the owner must provide
+## 8. The owner's decisions — all four answered 2026-09-05 (`ANSWERS.md` Part 20)
 
-Nothing to install. Four decisions:
+1. **Folder scope: the whole disk**, minus the deny-list in §3 above.
+2. **Approval gate: destructive actions only**, as `BRAINING.md` §7 specifies.
+3. **Keys: OpenCode's own — and they are already configured.** Verified on the machine:
+   `C:\Users\ASUS\.local\share\opencode\auth.json` holds credentials for **nine** providers
+   (anthropic, openai, google, deepseek, openrouter, huggingface, github-copilot, opencode,
+   opencode-go), managed with `opencode auth`. **Nothing to fetch, and Braining never sees any of
+   them** — the bridge starts OpenCode, and OpenCode reads its own file. A key that never passes
+   through the app cannot leak from the app.
+4. **Start: manual** — with one correction and one contradiction on record.
+   - *Correction:* binding to the Tailscale address is **not** a local-network restriction.
+     Tailscale reaches the PC from anywhere on earth; the phone is already on the tailnet and was
+     seen active over a relay. The owner's requirement is satisfied by the design as written.
+   - *Contradiction:* a bridge that is reachable while he is away must **already be running**.
+     Manual start means that if he forgets before leaving, nothing is listening and nothing can
+     start it remotely. Recorded as chosen, to be revisited the moment guardrails 1 and 2 are
+     proven — auto-start is what actually delivers "ask for a task while away".
 
-1. **Which folder** the agent may work in to begin with (one path).
-2. Whether the approval gate should fire on **every** write, or only on destructive actions as
-   `BRAINING.md` §7 specifies *(recommended: as specified)*.
-3. Whether OpenCode should use **his own API keys** already configured in OpenCode, or a key entered
-   in Braining *(recommended: OpenCode's own — Braining never needs to see it)*.
-4. Whether the PC bridge should start **with Windows** or be started by hand *(recommended: by
-   hand at first; an agent that can write files should not be listening before it is trusted)*.
+**Nothing to install.** OpenCode 1.17.14 with `serve`, Tailscale on both devices, Node 22 — all
+already present.

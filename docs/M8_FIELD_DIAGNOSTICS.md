@@ -98,13 +98,26 @@ once — "Braining closed unexpectedly last time — send a report?"
 5. Sharing the report uses M6's share sheet and arrives intact.
 6. With every optional field declined, the report still generates and is still useful.
 
-## What the owner must decide
+## The owner's decisions — all four answered 2026-09-05 (`ANSWERS.md` Part 20)
 
-1. **Location — the sensitive one.** Off by default is the recommendation; if wanted, coarse
-   (city-level) at most, behind an explicit opt-in with a truthful rationale, and the file must say
-   plainly that it is present. Real-time location is never stored, by policy.
-2. **Format:** Markdown for a human to read, or JSON to diff across users? *(Recommended: Markdown —
-   the owner is the only reader, and a file he can read beats a file he must parse.)*
-3. **Crash auto-offer:** on by default, or only from Settings? *(Recommended: on — a crash the user
-   never mentions is the one that never gets fixed.)*
-4. **Retention:** how long old reports stay on the device before being cleaned up.
+1. **Location: OFF.** Not collected at all — not even city-level. The question is closed.
+2. **Format: Markdown.** He is the only reader; a file he can read beats one he must parse.
+3. **Crash auto-offer: yes.** After a crash the next launch offers the report once.
+4. **Retention: until the fault is dealt with — and they aggregate.** This is the substantive one,
+   and it adds work to the milestone rather than merely answering it. See below.
+
+## The aggregate report — `ANSWERS.md` Part 20 §M8-4
+
+Reports are not aged out on a timer; they are kept **until handled**. Alongside them the app
+maintains **one combined report** so a pile of individual files stays reviewable:
+
+- **`reports/index.md`** — one row per incident: date, time, anonymous user id, app version,
+  provider, error type, and a one-line summary. Exportable as a single file through M6's
+  `FileExport`, which is the point: the owner reviews and produces statistics from one document
+  rather than opening twenty.
+- **An anonymous user id.** The app is given to friends, so "which user" has to be answerable. A
+  **random UUID generated on first run** and stored locally does it. Explicitly **not** a name, an
+  email, a phone number, or an advertising/device identifier — the hard constraint is that the
+  shipped APK carries no personal data, and a random number distinguishes a device without
+  identifying its owner. It is sufficient for exactly what he asked for: reports and statistics.
+- Marking an incident handled removes it from the active set; the index keeps the row.
