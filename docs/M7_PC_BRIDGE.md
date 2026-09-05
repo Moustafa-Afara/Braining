@@ -63,8 +63,11 @@ JVM build into a project whose Gradle setup is already the most fragile thing in
      An agent that can read it can leak them, which is hard constraint 3 (BYOK) broken from the
      inside.
    - `.ssh`, `.gnupg` and equivalent credential stores.
-   - `C:\Windows`, `Program Files` — writing there needs admin anyway and breaks the machine, not
-     the project.
+
+   **`C:\Windows` and `Program Files` were removed from the deny-list on 2026-09-05** at the
+   owner's instruction — he wants the agent able to work with installed software. Note the practical
+   limit rather than a policy one: writing to either still requires administrator rights, and the
+   bridge is not to be run elevated, so writes there will simply fail unless that changes.
 
    Everything else is readable and writable. Path resolution still happens: every path is resolved to
    its real absolute form, and `..` and symlinks are evaluated **before** the deny-list is applied —
