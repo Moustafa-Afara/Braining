@@ -89,8 +89,7 @@ Both keep the promise. Neither requires Tailscale on the user's side at all.
 - The matrix has one row per user-visible feature and no row older than the last release.
 
 ### What the owner must provide
-- **A ruling on (a)**: build the support session + M8 route (recommended), or insist on remote
-  access (then L2 must document the backdoor as an accepted risk, and Play submission is at risk).
+- **Ruled 2026-09-05: build the support session + M8 route. No remote access.** Closed.
 - Nothing to install for (b).
 
 ### Open questions for the owner

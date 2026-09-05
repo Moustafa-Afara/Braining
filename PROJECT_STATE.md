@@ -31,8 +31,10 @@ Clarify result.
 3. **Then the launch program, L1 → L9** → `docs/launch/00_LAUNCH_PLAN.md`. Nine briefs in the
    owner's binding order: support & testing regime, security audit, user guide + video, legal &
    ownership, Google Play (+ an honest Apple assessment), website, the Arabic technical narrative,
-   marketing & agent-run support, and the Version-2 proposal. **Three owner rulings are pending**
-   before L1 starts — `ANSWERS.md` Part 21 lists them. L1's testing regime may begin at once.
+   marketing & agent-run support, and the Version-2 proposal. **All three rulings are in**
+   (`ANSWERS.md` Part 21, evening): no remote access to users' phones — support session + M8
+   reports instead; Apple only after Play results; public source-available repository. Legal name
+   **Moustafa Afara**; `allowBackup` is now false. **L1 can start immediately.**
 
 **Two things that must not be lost:**
 
@@ -712,9 +714,10 @@ the PC* as the thing M7 is still for.
 
 Dictated by the owner on 2026-09-05, order binding. Each phase has its own brief written for an agent
 who has never seen the project. Preconditions M7 + M8, except L1's testing regime which starts now.
-Three rulings pending (`ANSWERS.md` Part 21): remote access to users' phones (recommended **no** —
-M8 reports + a user-initiated support session instead), Apple (the app is Android-only; iOS is a
-separate build), and public-source-available vs private repository.
+All three rulings taken 2026-09-05 evening (`ANSWERS.md` Part 21): **no** remote access to users'
+phones (support session + M8 reports instead); Apple **after Play results**; **public
+source-available** repository. `tools/` now holds the static checks (`check.py`, `imports.py`) and
+`tools/device-tests/` the adb-driven scenario scripts — both rescued from session-scoped locations.
 
 ### Then M7 — the PC bridge (Path B)  ·  earlier notes called this M6
 

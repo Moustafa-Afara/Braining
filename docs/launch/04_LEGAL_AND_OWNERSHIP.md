@@ -1,7 +1,7 @@
 # L4 — License, terms, privacy policy, and ownership
 
 ## Goal
-Terms and licensing that establish **exclusive ownership under the name Mustafa Afara**, an About
+Terms and licensing that establish **exclusive ownership under the name Moustafa Afara**, an About
 screen where that name is tappable and opens `https://t.me/Mustafa_Afara`, and — the item the owner
 did not name but Google Play will demand — a **privacy policy at a public URL**.
 
@@ -17,7 +17,7 @@ lawyer in his jurisdiction before the Play submission. Nothing here is legal adv
   so explicitly. A repository with no license is *legally* all-rights-reserved, but nobody reading it
   knows that, and Play reviewers, users and copiers will assume the opposite.
 
-## The decision that shapes everything (owner's ruling needed)
+## The decision that shapes everything — **RULED 2026-09-05: public, source-available, all rights reserved**
 **Public source-available, or private repository?**
 - **Public, all rights reserved (source-available):** the code stays visible (the share button and
   the release already live on GitHub), the license says explicitly: you may read, build for
@@ -30,7 +30,7 @@ app, and the owner's friends can see that nothing leaves their phone.)*
 
 ## Deliverables
 1. **`LICENSE`** — proprietary, source-available, in English with an Arabic summary; copyright
-   "© 2026 Mustafa Afara. All rights reserved." Explicit permitted/forbidden lists as above.
+   "© 2026 Moustafa Afara. All rights reserved." Explicit permitted/forbidden lists as above.
 2. **`TERMS.md` / in-app «الشروط»** — plain language, both languages. Must cover: BYOK (keys and
    costs are the user's; the user is bound by each provider's terms); no warranty; the app sends
    prompts only to the provider the user chose and to the user's own PC if configured; the PC bridge
@@ -42,7 +42,7 @@ app, and the owner's friends can see that nothing leaves their phone.)*
    sent **only** when the user chooses, contain an anonymous random id and no location; file exports
    go where the user sends them. Hosted at a public URL (GitHub Pages via L6, or the repo) — Play
    needs the URL.
-4. **About screen** (`feature-settings`): app name, version, "© Mustafa Afara" as a **tappable
+4. **About screen** (`feature-settings`): app name, version, "© Moustafa Afara" as a **tappable
    link** opening `https://t.me/Mustafa_Afara` (`Intent.ACTION_VIEW`, falls back to a browser if
    Telegram is absent), links to Terms, Privacy, the Guide (L3), and the source.
 5. **Attribution kept in the APK**: the About text is a string resource, not stripped by R8.
@@ -59,5 +59,5 @@ from a phone with no login; Play's Data Safety answers can be filled in truthful
 alone.
 
 ## What the owner must provide
-- The public/private ruling. - Confirmation of the display name **"Mustafa Afara"** (the email uses
-  "Moustafa" — pick one spelling for all legal text). - The minimum age he wants to state.
+- ~~The public/private ruling~~ taken: public. - Name **confirmed: "Moustafa Afara"** (as in the
+  email). - The minimum age he wants to state — still open.

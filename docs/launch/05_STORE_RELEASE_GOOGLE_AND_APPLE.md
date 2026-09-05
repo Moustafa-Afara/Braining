@@ -68,5 +68,5 @@ real users, then decide. If the owner wants it regardless, the first deliverable
 feasibility spike — move `core-domain` into a shared module and compile it for iOS — before any
 commitment.
 
-### What the owner must rule on
-Pursue iOS now, after Play traction, or not at all.
+### Ruled 2026-09-05
+**After Play results.** No iOS work before then; the feasibility spike is the first step when it starts.
