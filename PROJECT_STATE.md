@@ -562,7 +562,46 @@ moves**.
 
 ## 8. Next step
 
-### ⛔ THE BLACK SCREEN — captured, narrowed, and now known to be INTERMITTENT (2026-09-05, late)
+### ⛔ THE BLACK SCREEN — a large elimination round, and one hard new fact (2026-09-05, night)
+
+**The owner granted build/device autonomy, so this round was run end to end from the session:**
+build, install, drive the phone, capture, analyse. `platform-tools-2\adb.exe` for everything,
+`uiautomator dump` to find controls by bounds, `input tap` to operate them, `screencap` for truth.
+
+**The one hard new fact.** When the screen is black, **no Compose event fires at all** — no
+recompose line, no layout-size change, no `LEAVE composition`, no exception. Combined with the
+earlier capture (window focused, `mHasSurface=true`, screenshot uniformly `#0E0D14`, empty semantics
+tree), the composition is intact and **the pixels are not**. That moves the search off Compose
+logic and onto the rendering/surface layer. It also explains why every log looked "silent": a black
+screen produces nothing to log, so silence was the symptom, not a missing capture.
+
+**Eliminated by direct test, not by argument.** Every one of these was driven automatically and
+checked by measuring the semantics-tree size each cycle (healthy ≈ 12 500 bytes, black ≈ 3 000):
+
+- Settings → back → open menu → switch provider: **58+ cycles, clean.** The `BRAINING` log shows an
+  event sequence *identical* to the owner's failing run.
+- Rotation / configuration change: clean. `laid out 2712x1220` then `1220x2712`; the Activity is
+  destroyed and recreated correctly every time.
+- Backgrounding and returning: clean.
+- **Process death and restore** (`am kill` while backgrounded — what MIUI actually does): clean.
+  New pid every run, `len` unchanged. This was the strongest hypothesis and it is dead.
+- With **real message content** in the chat (a message sent and answered): clean.
+- Recomposition storm: dead (counts stay in single digits per screen).
+- Exceptions: dead. Zero `UNCAUGHT`, zero `FATAL`. The 161 `AndroidRuntime` lines in the capture are
+  all `uiautomator` (uid 2000), i.e. this session's own tooling.
+- Layout collapse: dead. **Every** `laid out` line in the whole capture is a correct full size.
+
+**So it is not reproducible on demand, and it is not any of the above.** It remains real — the owner
+hits it in ordinary use. The apparatus is now built for the next occurrence rather than for
+guessing: `logcat -G 64M`, a **continuous capture** to `log_black.txt` that survives shell exit
+(verified still writing), and probes for composition entry/exit and laid-out size.
+
+**Next occurrence is the whole plan.** When it goes black, capture *immediately*, and specifically
+look at the render layer for that pid — `OpenGLRenderer`, `VRI[MainActivity]` draw reports,
+`BLASTBufferQueue`, `SurfaceFlinger` — not at Compose. A screenshot plus
+`dumpsys window` and `dumpsys gfxinfo com.braining.app` taken while black are worth more than any
+amount of further reasoning.
+
 
 **The app logs now, and the black state was caught in the act.** What that ruled out, with evidence
 rather than argument:
