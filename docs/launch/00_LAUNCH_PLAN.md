@@ -35,7 +35,7 @@ the SDK `package.xml` files, or `keystore.properties`; the debug probes in `Chat
 | L4 | `04_LEGAL_AND_OWNERSHIP.md` | License, terms, **privacy policy**, About screen with the owner's name → Telegram | before L5 — **Play requires a hosted privacy-policy URL** |
 | L5 | `05_STORE_RELEASE_GOOGLE_AND_APPLE.md` | Google Play plan in full; **Apple: an honest feasibility assessment — the app is Android-only** | after L4 |
 | L6 | `06_WEBSITE.md` | A calm, modern, interactive site: features, downloads, guide, policies, contact | hosts L3's PDF and L4's policies; GitHub Pages fits the no-server posture |
-| L7 | `07_TECHNICAL_NARRATIVE_AR.md` | The complete technical story in simple Arabic, environment → store | **last of the build phases** — it documents everything before it |
+| L7 | `07_TECHNICAL_NARRATIVE_AR.md` | The complete technical story in simple Arabic — **the idea → Android → environment → M1–M8 → L1–L6 → L7 itself**, fourteen parts, nothing skipped | **after L6** — it documents every stage before it, build *and* launch |
 | L8 | `08_MARKETING_AND_SUPPORT_AUTOMATION.md` | Free + paid marketing, launch sequence, and agent-run support so no team is needed | after L5/L6 |
 | L9 | `09_NEXT_VERSION_PROPOSAL.md` | A full proposal for Version 2, for later | last |
 
