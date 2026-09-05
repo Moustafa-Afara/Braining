@@ -2,12 +2,14 @@ package com.braining.app.navigation
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.braining.core.domain.history.SessionRecord
+import com.braining.core.ui.diagnostics.Diag
 import com.braining.feature.chat.ChatScreen
 import com.braining.feature.clarify.ClarifyScreen
 import com.braining.feature.clarify.ClarifyViewModel
@@ -83,6 +85,16 @@ fun BrainingNavGraph(
      */
     startDestination: String = Routes.CHAT,
 ) {
+    // TEMPORARY, 2026-09-05 — remove with the ChatScreen probe once the black screen is named.
+    // Every screen the app lands on, in order, under one tag. The black screen was reported as
+    // "Settings, back, open the menu"; this says plainly whether the app is even on CHAT when it
+    // goes dark, or somewhere the reproduction did not mention.
+    LaunchedEffect(navController) {
+        navController.currentBackStackEntryFlow.collect { entry ->
+            Diag.log("nav -> ${entry.destination.route}")
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,

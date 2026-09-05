@@ -74,7 +74,7 @@ core, built first. B (M6) = a PC bridge over Tailscale driving OpenCode headless
 ✅ **M3 Clarify + Forge — CLOSED 2026-08-17** · ✅ **M4 route + translate + feedback — CLOSED
 2026-08-18** · **«مِداد» identity built 2026-08-18 — untested on the phone** ·
 **M5 history + polish — tested on the phone 2026-08-28, four findings fixed the same day
-(M5.1)** · **M5.2 Ollama built 2026-08-31, untested** · **M5.3 key guide** · **OpenRouter built 2026-09-04** · **M5 BUILT IN FULL — one test round remains** · M6 PC bridge.
+(M5.1)** · **M5.2 Ollama built 2026-08-31, untested** · **M5.3 key guide** · **OpenRouter built 2026-09-04** · **M5 BUILT IN FULL — one test round + the black screen remain** · M6 file generation → M7 PC bridge → M8 field diagnostics (2026-09-05 order).
 
 ---
 
@@ -562,7 +562,49 @@ moves**.
 
 ## 8. Next step
 
-### ◐ THE BLACK SCREEN — mechanism found 2026-09-05, fix written, one link still open
+### ⛔ THE BLACK SCREEN — STILL OPEN. First fix addressed a DIFFERENT bug. (2026-09-05 evening)
+
+**Read this before touching anything: the confident section that used to be here was wrong, in the
+exact way §10 entry 1 keeps being paid for.** The morning's logs showed activity recreation
+correlated with the owner killing the app, and a `produceState`-until-null start path that rendered
+a black `Surface`. A real bug — a rotation or dark/light switch could leave the *start-up* screen
+black. It was fixed (`MainActivity`: `rememberSaveable` + `withTimeoutOrNull` + a spinner instead of
+an empty `Surface`), and the owner **confirmed** the fix: after it, rotating the phone no longer
+blacks out.
+
+**But that was not the reported bug.** The report is: Settings → back → open the provider menu →
+black, and after the fix and a full phone restart **it still happens, every time.** The morning
+connected two things that were not connected. The reproduction capture (`log2`, pid 7871) shows the
+activity was **not** recreated during the repro — it launched once, popups opened and closed, and
+the main thread was already spending 388–856 ms per frame. The recreation pairs were at other times
+of the evening. So the start-path fix is kept (it fixed a real latent fault) and the reported bug is
+**unexplained again**, honestly labelled so.
+
+**What is now known for certain, and what is not.** Not a crash (crash buffer empty). Not a logged
+ANR. The app is alive, focused, taking touches, drawing nothing. What it is instead — a composition
+loop, a native/GPU stall, or a Popup/window fault — is **not determined**, and no fourth guess will
+be made about the top bar. The blocker all along is §10 entry 64: the app logged nothing.
+
+**So the app now logs (`Diag`, tag `BRAINING`, shipped this build).** A recomposition probe
+(`SideEffect` in `ChatScreen`), nav-destination logging, the menu-open line, and an uncaught-handler
+that stamps any exception with the tag. The next capture is decisive by construction:
+
+- `adb logcat -s BRAINING` **floods** with `ChatScreen recompose #N` → an infinite recomposition,
+  main thread pegged. That is the cause.
+- it shows an `UNCAUGHT` stack → an exception the crash buffer missed; the stack names the line.
+- it goes **silent** while the process stays alive → not composition, not an exception: a
+  native/GPU/window fault, and the search moves to `adb shell dumpsys gfxinfo com.braining.app` and
+  a SIGQUIT thread dump (the app is a debug build, so this is available).
+
+`adb` is confirmed working on the owner's PC (verified from this session via desktop-commander); the
+phone was simply not tethered at capture time. Whoever picks this up captures the above **before**
+proposing any cause. This probe code is temporary and marked for removal in `ChatScreen.kt` and
+`NavGraph.kt`; the `Diag` object and the crash handler stay (they are M8 phase 1).
+
+**Also measured, not guessed, and left alone:** every interaction blocks the main thread 388–856 ms
+(`Choreographer: Skipped 47–104 frames`, twelve times in twenty seconds). Queued in §9. It may or
+may not be the same fault; the probe above will say.
+
 
 Reproducible on the owner's phone: open Settings, press back, open the provider menu → the
 screen goes black and answers nothing. He was asked to choose between three failures by name and
@@ -659,7 +701,21 @@ cd C:\Dev\Braining
 
 ---
 
-### Then M6 — the PC bridge (Path B)
+### Next — M6: file generation & sharing  ·  spec: `docs/M6_FILE_GENERATION.md`
+
+**The owner reprioritised on 2026-09-05.** The next milestone is no longer the PC bridge; it is
+letting the models produce files the user can download and share over social apps, in both chat and
+Clarify. This is small by design: the model writes clean Markdown, the app packages it and hands it
+to the Android share sheet — one helper in `core-ui`, a `FileProvider`, two call sites, one
+system-prompt line, one seven-row test list. The full spec, the owner decisions it waits on, and
+what is deferred (PDF/Word) are in the design note.
+
+**Open decision for the owner:** M6 displaces the PC bridge, it does not cancel it. The bridge
+below is now **M7**. Confirm that is right — or whether Tailscale's remote *model* access has
+already met the original "use my PC from outside the house" goal, leaving only *running tasks on
+the PC* as the thing M7 is still for.
+
+### Then M7 — the PC bridge (Path B)  ·  earlier notes called this M6
 
 Tailscale, OpenCode headless, the three guardrails. **And two items that were deferred *into* M6
 by name and must not be read as missed work:**
@@ -684,7 +740,9 @@ lessons were paid for by plans that had quietly been made unnecessary or already
 - **No hard size cap and no auto-deletion.** `ANSWERS.md` Part 1 §10 — storage used is surfaced
   and the user decides. An app that silently deletes the user's thinking to save 40 MB has made a
   decision that was not its to make.
-- **No FTS, no sync, no export.** Sync is closed (Part 11 §K5). Export was never asked for.
+- **No FTS, no sync.** Sync is closed (Part 11 §K5). Export *was* never asked for — until
+  2026-09-05, when the owner asked for it as **M6** (`docs/M6_FILE_GENERATION.md`); it is a
+  new milestone, not a gap in M5.
 - **Plain chat is still not recorded**, and still sends no system prompt. Chat is the instrument
   for testing a provider, a key or a model; an instrument that accumulates state measures
   something different every time it is used.

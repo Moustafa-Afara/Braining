@@ -53,10 +53,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.braining.core.ui.diagnostics.Diag
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -107,6 +109,24 @@ fun ChatScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
+
+    // ── TEMPORARY, 2026-09-05 — remove once the black screen has a named cause. ──────────────
+    // The one question the logs could never answer: when the screen goes black and takes touches
+    // but draws nothing, is the main thread looping inside composition, or stuck somewhere else?
+    // `SideEffect` runs after every *successful* recomposition. If the screen is caught in a
+    // recomposition storm this line floods `adb logcat -s BRAINING` at thousands a second; if the
+    // thread is blocked elsewhere (native, GPU, a deadlock) the counter simply stops. Either
+    // answer ends the guessing. `remember` so the counter is not itself a state read that could
+    // provoke the very loop it is measuring.
+    val recomposeTick = remember { intArrayOf(0) }
+    SideEffect {
+        recomposeTick[0]++
+        Diag.log(
+            "ChatScreen recompose #${recomposeTick[0]} " +
+                "provider=${uiState.selectedProvider.name} " +
+                "err=${uiState.error != null} opts=${uiState.manualOptions.size}",
+        )
+    }
 
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
@@ -191,7 +211,10 @@ fun ChatScreen(
                     Box {
                         Row(
                             modifier = Modifier
-                                .clickable { expanded = true }
+                                .clickable {
+                                    Diag.log("provider menu open requested")
+                                    expanded = true
+                                }
                                 .padding(vertical = 8.dp, horizontal = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
