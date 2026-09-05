@@ -59,3 +59,52 @@ Build order is M6 → M8. Phase 1 (`Diag`) is already in the tree.
 
 A server, an analytics SDK, background collection, any automatic upload, raw audio (never — hard
 constraint), or anything that puts user data anywhere the user did not personally send it.
+
+---
+
+## Build order (added 2026-09-05, so a fresh session can execute this)
+
+**Phase 1 — DONE, already in the tree.** `core-ui/diagnostics/Diag.kt`: one tag (`BRAINING`), and
+an uncaught-exception handler installed in `BrainingApp` that stamps any crash with that tag and
+still chains to the platform handler. This shipped for the black-screen hunt and is the seam
+everything below hangs on.
+
+**Phase 2 — the ring buffer.** Give `Diag` an in-memory ring of the last ~200 lines. An app cannot
+read its own full logcat on modern Android without a special permission, so the report must carry
+its own history. Bounded, no disk, cleared on process death.
+
+**Phase 3 — the context collector.** One pure function that assembles: app version and build; the
+selected provider and model **by name, never the key**; device model, Android version, ABI, screen
+size and density; network type (Wi-Fi / cellular / offline) and a reachability + latency probe to
+the endpoint that failed; locale; timestamp; and the failure itself — message, provider, HTTP
+status, plus the **already-redacted** `RequestDiagnostics` (`redactSecrets` exists and is proven —
+reuse it, do not reinvent it).
+
+**Phase 4 — the report file and the hand-off.** Render the above as Markdown and hand it to **M6's
+`FileExport`**. That is the whole delivery mechanism: the user taps share, and it goes wherever they
+choose. No server, no upload, no background collection.
+
+**Phase 5 — the entry points.** A "شيء ما لا يعمل" action in Settings, and an offer on any provider
+failure. Plus the crash case: the handler writes a marker, and on the *next* launch the app offers
+once — "Braining closed unexpectedly last time — send a report?"
+
+## Test list
+
+1. A report generated after a provider failure contains the provider, the status and the redacted
+   request — and **no API key**. Open the file and read it.
+2. The same report contains the last N `Diag` lines.
+3. Network fields are correct on Wi-Fi, on cellular, and with the phone offline.
+4. A forced crash produces the marker, and the next launch offers the report exactly **once**.
+5. Sharing the report uses M6's share sheet and arrives intact.
+6. With every optional field declined, the report still generates and is still useful.
+
+## What the owner must decide
+
+1. **Location — the sensitive one.** Off by default is the recommendation; if wanted, coarse
+   (city-level) at most, behind an explicit opt-in with a truthful rationale, and the file must say
+   plainly that it is present. Real-time location is never stored, by policy.
+2. **Format:** Markdown for a human to read, or JSON to diff across users? *(Recommended: Markdown —
+   the owner is the only reader, and a file he can read beats a file he must parse.)*
+3. **Crash auto-offer:** on by default, or only from Settings? *(Recommended: on — a crash the user
+   never mentions is the one that never gets fixed.)*
+4. **Retention:** how long old reports stay on the device before being cleaned up.

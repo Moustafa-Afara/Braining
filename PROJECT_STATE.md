@@ -10,6 +10,41 @@ sessions; this file is the only channel between them. Read it first, update it l
 
 ---
 
+## ⇢ START HERE — handover written 2026-09-05
+
+The conversation that produced M5, M6 and the black-screen hunt was closed for length. Everything it
+knew is in this file and in `docs/`. Nothing is carried in anyone's head.
+
+**Where the project stands.** M1–M6 are closed. The app has six providers (including Ollama over
+Tailscale and OpenRouter), Clarify, history, the key guide, and — new on 2026-09-05 — **file export**
+(M6): the model writes clean Markdown and the app saves or shares it from chat and from the forged
+Clarify result.
+
+**What is next, in order, each with a written spec that says what the owner must provide:**
+
+1. **M7 — the PC agent bridge** → `docs/M7_PC_BRIDGE.md`. The original point of the project. Both
+   long-standing blockers were verified on the owner's machine on 2026-09-05 and are **closed**:
+   OpenCode 1.17.14 *does* have a headless mode (`opencode serve`), and Tailscale is already up on
+   both devices. Nothing needs installing; four product decisions are listed at the end of that doc.
+2. **M8 — field diagnostics** → `docs/M8_FIELD_DIAGNOSTICS.md`. Phase 1 (the `Diag` tag and the
+   uncaught-exception handler) already shipped. The rest is specified with a build order.
+
+**Two things that must not be lost:**
+
+- **The black screen is *not observed*, not *fixed*.** §8 explains what was ruled out, what the one
+  hard fact is (the composition is intact and the pixels are not — so it is a **render-layer**
+  question, not a Compose one), and how to re-arm the capture in three commands. Do not close it.
+- **The debug probes are still in `ChatScreen.kt` and `NavGraph.kt`** and log on every
+  recomposition. They are marked TEMPORARY and are a **release blocker** — remove or gate them
+  before any release APK. `Diag` and the crash handler stay.
+
+**Tooling this repo now assumes** (§10 entry 67): this machine has three `adb` binaries at two
+versions. Always call `platform-tools-2\adb.exe` by full path. A session with device access can
+build, install, drive the phone (`uiautomator dump` for bounds, `input tap` to operate it,
+`screencap` for truth) and read logs unaided — that is how the 2026-09-05 elimination round was run.
+
+---
+
 ## 0. AGENT PROTOCOL — obey before touching anything
 
 1. **Read this file in full first.** Do not crawl the repo to orient yourself. Open only the
@@ -74,7 +109,7 @@ core, built first. B (M6) = a PC bridge over Tailscale driving OpenCode headless
 ✅ **M3 Clarify + Forge — CLOSED 2026-08-17** · ✅ **M4 route + translate + feedback — CLOSED
 2026-08-18** · **«مِداد» identity built 2026-08-18 — untested on the phone** ·
 **M5 history + polish — tested on the phone 2026-08-28, four findings fixed the same day
-(M5.1)** · **M5.2 Ollama built 2026-08-31, untested** · **M5.3 key guide** · **OpenRouter built 2026-09-04** · **M5 BUILT IN FULL — one test round + the black screen remain** · M6 file generation → M7 PC bridge → M8 field diagnostics (2026-09-05 order).
+(M5.1)** · **M5.2 Ollama built 2026-08-31, untested** · **M5.3 key guide** · **OpenRouter built 2026-09-04** · **✅ M5 CLOSED 2026-09-05** · **✅ M6 CLOSED 2026-09-05 — file export tested on the owner's phone** · next **M7 PC bridge** (`docs/M7_PC_BRIDGE.md`) → **M8 field diagnostics** (`docs/M8_FIELD_DIAGNOSTICS.md`).
 
 ---
 
@@ -562,180 +597,47 @@ moves**.
 
 ## 8. Next step
 
-### ⛔ THE BLACK SCREEN — a large elimination round, and one hard new fact (2026-09-05, night)
+### ◑ THE BLACK SCREEN — NOT OBSERVED since 2026-09-05. **Not** declared fixed.
 
-**The owner granted build/device autonomy, so this round was run end to end from the session:**
-build, install, drive the phone, capture, analyse. `platform-tools-2\adb.exe` for everything,
-`uiautomator dump` to find controls by bounds, `input tap` to operate them, `screencap` for truth.
+**The owner reports it no longer appears.** It is recorded here as *not observed*, deliberately, and
+not as *fixed*: **no root cause was ever found.** Nobody may close this on the strength of the
+symptom going quiet. What actually changed between "every time" and "gone" is not known, and the
+honest candidates are (a) something in the M6 / instrumentation build changed timing enough to hide
+it, (b) the morning's `MainActivity` guard mattered after all in a way the tests did not isolate, or
+(c) it is intermittent and simply has not recurred. **(c) is the one to assume.**
 
-**The one hard new fact.** When the screen is black, **no Compose event fires at all** — no
-recompose line, no layout-size change, no `LEAVE composition`, no exception. Combined with the
-earlier capture (window focused, `mHasSurface=true`, screenshot uniformly `#0E0D14`, empty semantics
-tree), the composition is intact and **the pixels are not**. That moves the search off Compose
-logic and onto the rendering/surface layer. It also explains why every log looked "silent": a black
-screen produces nothing to log, so silence was the symptom, not a missing capture.
+**What was proven, and is worth keeping:**
 
-**Eliminated by direct test, not by argument.** Every one of these was driven automatically and
-checked by measuring the semantics-tree size each cycle (healthy ≈ 12 500 bytes, black ≈ 3 000):
+- Not a crash, not an ANR, not an exception (zero `UNCAUGHT`, zero `FATAL` across the whole capture).
+- Not a recomposition storm, not a layout collapse — **every** `laid out` line in the entire capture
+  is a correct full size.
+- Eliminated by *driven* test, not argument: Settings → back → menu → switch provider (58+ cycles),
+  rotation / configuration change, backgrounding and returning, **process death and restore**
+  (`am kill`, which is what MIUI actually does), and all of the above again with real message
+  content in the chat. All clean.
+- **The hard fact:** when the screen is black, **no Compose event fires at all**. Combined with the
+  window being focused with a live surface, a screenshot that is uniformly `#0E0D14`, and an empty
+  semantics tree — the composition is intact and *the pixels are not*. If it returns, the search
+  belongs in the **render layer** (`OpenGLRenderer`, `VRI[MainActivity]` draw reports,
+  `BLASTBufferQueue`, `SurfaceFlinger`) and **not** in Compose logic.
 
-- Settings → back → open menu → switch provider: **58+ cycles, clean.** The `BRAINING` log shows an
-  event sequence *identical* to the owner's failing run.
-- Rotation / configuration change: clean. `laid out 2712x1220` then `1220x2712`; the Activity is
-  destroyed and recreated correctly every time.
-- Backgrounding and returning: clean.
-- **Process death and restore** (`am kill` while backgrounded — what MIUI actually does): clean.
-  New pid every run, `len` unchanged. This was the strongest hypothesis and it is dead.
-- With **real message content** in the chat (a message sent and answered): clean.
-- Recomposition storm: dead (counts stay in single digits per screen).
-- Exceptions: dead. Zero `UNCAUGHT`, zero `FATAL`. The 161 `AndroidRuntime` lines in the capture are
-  all `uiautomator` (uid 2000), i.e. this session's own tooling.
-- Layout collapse: dead. **Every** `laid out` line in the whole capture is a correct full size.
+**If it returns, re-arm in three commands** (all verified working on this machine):
 
-**So it is not reproducible on demand, and it is not any of the above.** It remains real — the owner
-hits it in ordinary use. The apparatus is now built for the next occurrence rather than for
-guessing: `logcat -G 64M`, a **continuous capture** to `log_black.txt` that survives shell exit
-(verified still writing), and probes for composition entry/exit and laid-out size.
+```
+$adb = "C:\Users\ASUS\AppData\Local\Android\Sdk\platform-tools-2\adb.exe"   # lesson 67
+& $adb logcat -G 64M
+& $adb logcat -d -s BRAINING          # the app's own probes; capture IMMEDIATELY, see below
+```
 
-**Next occurrence is the whole plan.** When it goes black, capture *immediately*, and specifically
-look at the render layer for that pid — `OpenGLRenderer`, `VRI[MainActivity]` draw reports,
-`BLASTBufferQueue`, `SurfaceFlinger` — not at Compose. A screenshot plus
-`dumpsys window` and `dumpsys gfxinfo com.braining.app` taken while black are worth more than any
-amount of further reasoning.
+The Xiaomi sensor spam evicts our lines from a default-size buffer **within minutes**, which is why
+three early captures looked like silence. Raise the buffer first, capture straight after the fault.
 
+### ⚠ RELEASE BLOCKER CREATED BY THE HUNT — the probes are still in the shipped code
 
-**The app logs now, and the black state was caught in the act.** What that ruled out, with evidence
-rather than argument:
-
-- **Not a recomposition storm.** The `SideEffect` counter printed `#1`, `#2`, `#3` — single digits.
-  A pegged main thread would have flooded.
-- **Not an exception.** No `UNCAUGHT` line, no `AndroidRuntime`, nothing in the crash buffer.
-- **Not the `MainActivity` start gate** that the morning's fix addressed. That path now renders a
-  spinner; the black screen shows no spinner.
-- **The window is healthy.** `mCurrentFocus` is MainActivity's own window, `mHasSurface=true`,
-  `isReadyForDisplay()=true`, full 1220×2712. No popup holds focus.
-- **The screen is painted, and empty.** A screenshot is uniformly `#0E0D14` —
-  `BrandPalette.Ink.Ground`, the exact colour `Surface(color = background)` paints. `uiautomator`
-  returns a *real* hierarchy for `com.braining.app` containing a full-screen `FrameLayout` and
-  essentially no content nodes.
-
-So: **theme and `Surface` compose and paint, `ChatScreen` composes (its recompose line prints), and
-then nothing is laid out.** The fault sits between composition and layout — which is precisely the
-gap neither existing probe can see, hence the two added below.
-
-**It is INTERMITTENT, and that corrects the record.** It was reported as happening every time. Six
-cycles of Settings → back → open menu → switch provider were driven over adb, and the `BRAINING`
-log shows an event sequence **identical** to the owner's own failing run — same navigations, same
-recompose counts, same provider switches — with no black screen. The path is confirmed; the trigger
-is not on it. Nobody should "fix" this from a theory again: six clean passes is what a theory would
-have predicted anyway.
-
-**Two probes added for the next build**, aimed exactly at the remaining gap: `onGloballyPositioned`
-on the Scaffold logs the size the screen is actually laid out at (logged only when it changes), and
-a `DisposableEffect` logs `ENTER`/`LEAVE` of the composition. A `0x0`, a missing layout line after a
-`nav -> chat`, or a `LEAVE` with nothing following names the fault outright.
-
-**Two capture problems were fixed, and they explain the earlier dead ends.** The Xiaomi sensor spam
-evicts our lines from the default ring buffer within minutes — a capture taken a few minutes late is
-empty and looks like silence. The buffer is now `logcat -G 16M`, and a continuous capture runs to
-`log_black.txt` (git-ignored) so the next occurrence cannot be lost.
-
-**Tooling note worth keeping:** this session can drive the phone directly —
-`platform-tools-2\adb.exe` for everything (lesson 67), `uiautomator dump` to locate controls by
-bounds, `input tap` to operate them, `screencap` for ground truth. That is how the above was
-established without the owner tapping anything.
-
-
-**Read this before touching anything: the confident section that used to be here was wrong, in the
-exact way §10 entry 1 keeps being paid for.** The morning's logs showed activity recreation
-correlated with the owner killing the app, and a `produceState`-until-null start path that rendered
-a black `Surface`. A real bug — a rotation or dark/light switch could leave the *start-up* screen
-black. It was fixed (`MainActivity`: `rememberSaveable` + `withTimeoutOrNull` + a spinner instead of
-an empty `Surface`), and the owner **confirmed** the fix: after it, rotating the phone no longer
-blacks out.
-
-**But that was not the reported bug.** The report is: Settings → back → open the provider menu →
-black, and after the fix and a full phone restart **it still happens, every time.** The morning
-connected two things that were not connected. The reproduction capture (`log2`, pid 7871) shows the
-activity was **not** recreated during the repro — it launched once, popups opened and closed, and
-the main thread was already spending 388–856 ms per frame. The recreation pairs were at other times
-of the evening. So the start-path fix is kept (it fixed a real latent fault) and the reported bug is
-**unexplained again**, honestly labelled so.
-
-**What is now known for certain, and what is not.** Not a crash (crash buffer empty). Not a logged
-ANR. The app is alive, focused, taking touches, drawing nothing. What it is instead — a composition
-loop, a native/GPU stall, or a Popup/window fault — is **not determined**, and no fourth guess will
-be made about the top bar. The blocker all along is §10 entry 64: the app logged nothing.
-
-**So the app now logs (`Diag`, tag `BRAINING`, shipped this build).** A recomposition probe
-(`SideEffect` in `ChatScreen`), nav-destination logging, the menu-open line, and an uncaught-handler
-that stamps any exception with the tag. The next capture is decisive by construction:
-
-- `adb logcat -s BRAINING` **floods** with `ChatScreen recompose #N` → an infinite recomposition,
-  main thread pegged. That is the cause.
-- it shows an `UNCAUGHT` stack → an exception the crash buffer missed; the stack names the line.
-- it goes **silent** while the process stays alive → not composition, not an exception: a
-  native/GPU/window fault, and the search moves to `adb shell dumpsys gfxinfo com.braining.app` and
-  a SIGQUIT thread dump (the app is a debug build, so this is available).
-
-`adb` is confirmed working on the owner's PC (verified from this session via desktop-commander); the
-phone was simply not tethered at capture time. Whoever picks this up captures the above **before**
-proposing any cause. This probe code is temporary and marked for removal in `ChatScreen.kt` and
-`NavGraph.kt`; the `Diag` object and the crash handler stay (they are M8 phase 1).
-
-**Also measured, not guessed, and left alone:** every interaction blocks the main thread 388–856 ms
-(`Choreographer: Skipped 47–104 frames`, twelve times in twenty seconds). Queued in §9. It may or
-may not be the same fault; the probe above will say.
-
-
-Reproducible on the owner's phone: open Settings, press back, open the provider menu → the
-screen goes black and answers nothing. He was asked to choose between three failures by name and
-chose «أسود لا يستجيب لشيء» — not the app disappearing, not black with a working back button.
-
-**What two logcat captures prove, in order.**
-
-1. **Not a crash and not an ANR.** The events buffer records every one of both regardless of
-   whether a dialog is shown, and holds zero `am_crash` and zero `am_anr` for this package. No
-   `FATAL EXCEPTION` anywhere. All twelve process deaths in the log are `SwipeUpClean` /
-   `OneKeyClean` — the owner killing it himself.
-2. **MIUI changes the window configuration on its own account.** Ten
-   `configuration_changed: 536872064` = `0x20000500` =
-   WINDOW_CONFIGURATION | SCREEN_SIZE | SCREEN_LAYOUT in one evening, **six of them while
-   Braining was not running.** This is the phone, not the app.
-3. **`MainActivity` declares no `android:configChanges`**, so Android destroys and recreates it
-   on each one. Six `wm_relaunch_resume_activity` → `onPause` → `onStop` → `onDestroy` →
-   `onCreate` cycles for this activity, masks `480` and `2004`. Three separate processes show
-   `wm_on_create_called` **three times each**.
-4. **The recreations come in pairs, and every pair is followed by the owner killing the app.**
-   01:33 + 01:36 → killed 01:46. 01:52:12 + 01:52:16 (four seconds apart) → killed 01:56.
-   02:23:54 + 02:25:26 → killed 02:27. Three for three.
-5. **On recreation the app rendered nothing.** `setContent` re-ran, `produceState` restarted from
-   `null`, and `start?.let { }` meant the entire tree was `Surface(color = background)` and
-   nothing else — no graph, no chat, no top bar. `BrandPalette.Ink.Ground` is `#0E0D14`.
-   **A black screen, alive, focused, taking touches, drawing nothing.**
-6. **The last capture shows precisely that.** Final app log line 03:03:52.504; touches at
-   03:03:53.122 and 03:03:53.854 delivered to `a6b7dc7 com.braining.app/.MainActivity` — the
-   app's own window, not a stray popup — with no reaction to either; then 57 seconds of silence.
-   Choreographer stops complaining too, because nothing asked for a frame.
-
-**The link that is NOT proven** is why the gap lasted instead of flashing. `getAllKeys()` is
-`withContext(Dispatchers.IO)` and should return in milliseconds. That question is now moot rather
-than answered, and saying so is the honest description of the fix.
-
-**The fix (`MainActivity.kt`, 2026-09-05).** Three changes, each defensible on its own:
-`rememberSaveable` so the decision survives recreation and the gap can happen at most once per
-process; `withTimeoutOrNull(2 s)` on both reads, landing on CHAT, so it can never wait forever;
-and a spinner instead of an empty `Surface`, so **rendering nothing is no longer a legal state**
-— the reason four hours went into telling a crash, an ANR and a draw fault apart is that an empty
-screen looks identical to a dead app.
-
-**Second, independent defect, measured not inferred.** `Choreographer: Skipped 47–104 frames` and
-`PerfMonitor doFrame time=388–856 ms` — twelve times in twenty seconds, once per interaction.
-Every tap in this app blocks the main thread for four tenths of a second or more. Untouched here;
-it is queued in §9 and needs its own investigation, not a guess.
-
-**Free test that would confirm the trigger, no build required:** with the app open, rotate the
-phone, or switch the phone between dark and light mode. If the screen goes black, the trigger is
-the recreation and nothing to do with Settings or the menu at all.
+`ChatScreen.kt` logs **on every recomposition** (`SideEffect`), plus composition ENTER/LEAVE and
+laid-out size; `NavGraph.kt` logs every destination. During a streaming answer that is hundreds of
+lines a minute. They are marked TEMPORARY in the source and **must be removed or gated before any
+release APK**. `Diag` itself and the uncaught-exception handler **stay** — they are M8 phase 1.
 
 ### ✓ THE RELEASE BUILD IS PROVEN — 2026-08-30
 
@@ -782,7 +684,12 @@ cd C:\Dev\Braining
 
 ---
 
-### ⏳ M6 BUILT 2026-09-05, UNTESTED  ·  spec: `docs/M6_FILE_GENERATION.md`
+### ✅ M6 CLOSED 2026-09-05  ·  spec: `docs/M6_FILE_GENERATION.md`
+
+The owner tested generating a file, downloading it and sharing it — all succeeded. Share and save
+buttons sit beside copy on every model answer and on the forged Clarify result; the model is nudged
+to clean Markdown only when the request is file-shaped, decided by `FileRequestDetector` (nine unit
+tests, including that «profile» is not «file»).
 
 **The owner reprioritised on 2026-09-05.** The next milestone is no longer the PC bridge; it is
 letting the models produce files the user can download and share over social apps, in both chat and
