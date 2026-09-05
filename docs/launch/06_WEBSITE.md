@@ -25,7 +25,9 @@ out of scope here; contact goes to Telegram.
    guardrails stated plainly. Trust is the selling point; say what it does *not* do.
 6. **Privacy in one screen**: the same text as `PRIVACY.md`, verbatim.
 7. **Download & guide**: release link, the two PDFs, the video (when recorded).
-8. **Footer**: "© 2026 Moustafa Afara" → `https://t.me/Mustafa_Afara`, Terms, Privacy, Source.
+8. **Footer**: "© 2026 Moustafa Afara" → `https://t.me/Mustafa_Afara`, the official channel
+   **`@Braining_AI`** (https://t.me/Braining_AI), Terms, Privacy, Source. The channel is the
+   contact route the site pushes — it scales, a personal inbox does not.
 9. `/privacy` and `/terms` as standalone pages — Play needs a direct URL, not an anchor.
 
 ## Design constraints

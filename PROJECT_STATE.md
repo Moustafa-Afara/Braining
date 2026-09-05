@@ -45,6 +45,10 @@ Clarify result.
   recomposition. They are marked TEMPORARY and are a **release blocker** — remove or gate them
   before any release APK. `Diag` and the crash handler stay.
 
+**Brand handle: `Braining_AI`** — chosen 2026-09-05, the project's identity on every platform, not
+just Telegram (`https://t.me/Braining_AI`). Distinct from the owner's personal link
+`https://t.me/Mustafa_Afara`, which is what his name opens in the About screen. `ANSWERS.md` Part 21.
+
 **Tooling this repo now assumes** (§10 entry 67): this machine has three `adb` binaries at two
 versions. Always call `platform-tools-2\adb.exe` by full path. A session with device access can
 build, install, drive the phone (`uiautomator dump` for bounds, `input tap` to operate it,

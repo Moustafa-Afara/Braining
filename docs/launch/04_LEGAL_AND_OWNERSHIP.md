@@ -45,6 +45,11 @@ app, and the owner's friends can see that nothing leaves their phone.)*
 4. **About screen** (`feature-settings`): app name, version, "© Moustafa Afara" as a **tappable
    link** opening `https://t.me/Mustafa_Afara` (`Intent.ACTION_VIEW`, falls back to a browser if
    Telegram is absent), links to Terms, Privacy, the Guide (L3), and the source.
+   **Two Telegram links, and they are not interchangeable:** the owner's name goes to his *personal*
+   account (`Mustafa_Afara` — his ruling, and the URL keeps that spelling); the app's official
+   channel is **`Braining_AI`** (https://t.me/Braining_AI) and appears as
+   "القناة الرسمية / Official channel". A user wanting updates should never have to message the owner
+   directly to get them.
 5. **Attribution kept in the APK**: the About text is a string resource, not stripped by R8.
 
 ## Steps

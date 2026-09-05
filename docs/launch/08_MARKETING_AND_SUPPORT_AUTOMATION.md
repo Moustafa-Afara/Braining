@@ -40,7 +40,12 @@ day, as one message"); the public Telegram channel.
 
 ### Free channels (the launch sequence, in order)
 1. **GitHub release + README** polished (screenshots, the one-line promise, the guide link).
-2. **Telegram**: a channel for announcements, a group for users; the bot from (b) lives there.
+2. **Telegram — the project's home. Handle chosen 2026-09-05: `@Braining_AI`**
+   (https://t.me/Braining_AI), created by the owner the same day. Announcements channel first; a users'
+   group later if the volume justifies the moderation; the support bot from (b) lives in both.
+   **`Braining_AI` is the brand handle, not just a Telegram name** — reserve the identical handle on
+   YouTube, X, Instagram, TikTok and GitHub *now*, before any launch post, even on the platforms that
+   will stay empty for months. A handle taken by someone else after launch cannot be bought back.
 3. **The video (L3)** on YouTube — the owner's own explanation, following the PDF.
 4. **Arabic tech communities** — Reddit (r/arabs, r/Android, r/LocalLLaMA for the Ollama angle),
    Arabic developer Discords and Telegram groups, LinkedIn post from the owner's own profile,
